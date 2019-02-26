@@ -1,4 +1,4 @@
-![alt tag](https://travis-ci.org/QualiSystems/cloudshell-logger.svg?branch=dev)
+[![Build Status](https://travis-ci.org/QualiSystems/cloudshell-logger.svg?branch=dev)](https://travis-ci.org/QualiSystems/cloudshell-logger)
 [![Coverage Status](https://coveralls.io/repos/github/QualiSystems/cloudshell-logger/badge.svg?branch=dev)](https://coveralls.io/github/QualiSystems/cloudshell-logger?branch=dev)
 [![PyPI version](https://badge.fury.io/py/cloudshell-logger.svg)](https://badge.fury.io/py/cloudshell-logger)
 [![Dependency Status](https://dependencyci.com/github/QualiSystems/cloudshell-logger/badge)](https://dependencyci.com/github/QualiSystems/cloudshell-logger)
