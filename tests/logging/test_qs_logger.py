@@ -119,7 +119,7 @@ class TestQSLogger(TestCase):
     def test_get_accessible_log_path_default_params(self):
         """ Test suite for get_accessible_log_path method """
         path = qs_logger.get_accessible_log_path()
-        self.assertRegex(path, r"Logs[\\/]Autoload[\\/](.*[\\/])?default--\d{2}-\w+-\d{4}--\d{2}-\d{2}-\d{2}\.log")
+        self.assertRegexpMatches(path, r"Logs[\\/]Autoload[\\/](.*[\\/])?default--\d{2}-\w+-\d{4}--\d{2}-\d{2}-\d{2}\.log")
         self.assertTrue(os.path.dirname(path))
 
     def test_get_accessible_log_path_path_creation(self):
@@ -131,7 +131,7 @@ class TestQSLogger(TestCase):
     def test_get_accessible_log_path(self):
         """ Test suite for get_accessible_log_path method """
         path = qs_logger.get_accessible_log_path("reservation_id", "handler_name")
-        self.assertRegex(path, r"Logs[\\/]reservation_id[\\/](.*[\\/])?"
+        self.assertRegexpMatches(path, r"Logs[\\/]reservation_id[\\/](.*[\\/])?"
                                        r"handler_name--\d{2}-\w+-\d{4}--\d{2}-\d{2}-\d{2}\.log")
 
     def test_get_accessible_log_path_log_path_setting_missing(self):
