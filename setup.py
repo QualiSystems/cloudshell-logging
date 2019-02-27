@@ -11,7 +11,7 @@ with open('test_requirements.txt') as f_tests:
     required_for_tests = f_tests.read().splitlines()
 
 setup(
-    name='cloudshell-logger',
+    name='cloudshell-logging',
     url='http://www.qualisystems.com/',
     author='Quali',
     author_email='info@quali.com',
