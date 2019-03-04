@@ -79,7 +79,7 @@ def _get_log_path_config(config):
             try:
                 return tpl.format(**os.environ)
             except KeyError:
-                print ("Environment variable is not defined in the template {}".format(tpl))
+                print("Environment variable is not defined in the template {}".format(tpl))
     else:
         return config.get('UNIX_LOG_PATH')
 
@@ -123,7 +123,7 @@ def get_accessible_log_path(reservation_id='Autoload', handler='default'):
     log_path = _get_log_path_config(config)
 
     if log_path:
-        env_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "..")
+        env_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..")
         shell_name = os.path.basename(os.path.abspath(env_folder))
         log_path = os.path.join(log_path, reservation_id, shell_name)
         path = _prepare_log_path(log_path=log_path,
@@ -146,7 +146,7 @@ def log_execution_info(logger_hdlr, exec_info):
     if not hasattr(logger_hdlr, 'info_logged'):
         logger_hdlr.info_logged = True
         logger_hdlr.info('--------------- Execution Info: ---------------------------')
-        for key, val in exec_info.iteritems():
+        for key, val in exec_info.items():
             logger_hdlr.info('{0}: {1}'.format(key.ljust(20), val))
         logger_hdlr.info('-----------------------------------------------------------\n')
 
