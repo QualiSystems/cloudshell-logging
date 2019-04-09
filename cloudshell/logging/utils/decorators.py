@@ -1,4 +1,5 @@
 import logging
+import traceback
 from functools import wraps
 
 
@@ -24,11 +25,12 @@ def command_logging(func):
         try:
 
             result = func(*args, **kwargs)
-        except Exception:
-            logger.info(finishing_msg.format(func_name, 'unsuccessfully'))
+        except Exception as e:
+            logger.error(traceback.format_exc())
+            logger.debug(finishing_msg.format(func_name, 'unsuccessfully'))
             raise
         else:
-            logger.info(finishing_msg.format(func_name, 'successfully'))
+            logger.debug(finishing_msg.format(func_name, 'successfully'))
 
         return result
 
