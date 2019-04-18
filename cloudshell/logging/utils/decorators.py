@@ -13,7 +13,7 @@ def command_logging(func):
         if args:
             logger = getattr(args[0], 'logger', None) or getattr(args[0], '_logger', None)
             if not logger:
-                for var in list(args) + list(kwargs.values()):
+                for var in args + tuple(kwargs.values()):
                     if isinstance(var, logging.Logger):
                         logger = var
                         break
