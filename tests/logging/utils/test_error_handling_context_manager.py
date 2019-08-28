@@ -1,10 +1,14 @@
+import sys
 from unittest import TestCase
-
-from mock import MagicMock, Mock
 
 from cloudshell.logging.utils.error_handling_context_manager import (
     ErrorHandlingContextManager,
 )
+
+if sys.version_info >= (3, 0):
+    from unittest.mock import MagicMock, Mock
+else:
+    from mock import MagicMock, Mock
 
 
 class TestErrorHandlingContextManager(TestCase):
