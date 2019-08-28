@@ -1,9 +1,10 @@
 from unittest import TestCase
 
+from mock import MagicMock, Mock
+
 from cloudshell.logging.utils.error_handling_context_manager import (
     ErrorHandlingContextManager,
 )
-from mock import MagicMock, Mock
 
 
 class TestErrorHandlingContextManager(TestCase):
@@ -28,7 +29,7 @@ class TestErrorHandlingContextManager(TestCase):
 
         # Act
         with ErrorHandlingContextManager(logger=logger):
-            print("hello world")
+            print("hello world")  # noqa: T001
 
         # Assert
         logger.error.assert_not_called()
