@@ -1,12 +1,12 @@
 from unittest import TestCase
 
-from cloudshell.logging.utils.error_handling_context_manager import \
-    ErrorHandlingContextManager
+from cloudshell.logging.utils.error_handling_context_manager import (
+    ErrorHandlingContextManager,
+)
 from mock import MagicMock, Mock
 
 
 class TestErrorHandlingContextManager(TestCase):
-
     def test_log_written_when_exception_occurs(self):
         # Arrange
         logger = Mock()
@@ -15,7 +15,7 @@ class TestErrorHandlingContextManager(TestCase):
 
             # Act
             with ErrorHandlingContextManager(logger=logger):
-                raise ValueError('some value error occurred')
+                raise ValueError("some value error occurred")
         except ValueError:
 
             # Assert
@@ -28,7 +28,7 @@ class TestErrorHandlingContextManager(TestCase):
 
         # Act
         with ErrorHandlingContextManager(logger=logger):
-            print('hello world')
+            print("hello world")
 
         # Assert
         logger.error.assert_not_called()
