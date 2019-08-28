@@ -27,7 +27,6 @@ def command_logging(func):
 
             result = func(*args, **kwargs)
         except Exception:
-            # logger.exception(finishing_msg.format(func_name, 'unsuccessfully'))
             logger.debug(finishing_msg.format(func_name, "unsuccessfully"))
             raise
         else:
