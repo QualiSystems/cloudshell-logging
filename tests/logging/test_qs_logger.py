@@ -10,6 +10,9 @@ import re
 import shutil
 import sys
 
+from cloudshell.logging import qs_logger
+from cloudshell.logging.interprocess_logger import MultiProcessingLog
+
 if (sys.version_info >= (3,0)):
     from unittest.mock import MagicMock
     from unittest import TestCase, mock
@@ -18,9 +21,6 @@ else:
     import mock
     from unittest import TestCase
 
-
-from cloudshell.logging import qs_logger
-from cloudshell.logging.interprocess_logger import MultiProcessingLog
 
 CUR_DIR = os.path.dirname(__file__)
 full_settings = MagicMock(return_value={'LOG_PATH': '../../Logs',

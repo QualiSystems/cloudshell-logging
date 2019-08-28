@@ -1,8 +1,8 @@
 from unittest import TestCase
 
-from mock import Mock, MagicMock
-
-from cloudshell.logging.utils.error_handling_context_manager import ErrorHandlingContextManager
+from cloudshell.logging.utils.error_handling_context_manager import \
+    ErrorHandlingContextManager
+from mock import MagicMock, Mock
 
 
 class TestErrorHandlingContextManager(TestCase):
