@@ -10,3 +10,5 @@
 # Cloudshell logger
 
 Repo for the cloudshell-logging package. The cloudshell-logging package contains scripts and classes that help to create logger suitable for shells. 
+
+We use tox and pre-commit for testing. [Services description](https://github.com/QualiSystems/cloudshell-package-repo-template#description-of-services)
