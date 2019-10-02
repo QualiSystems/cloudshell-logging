@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/QualiSystems/cloudshell-logging.svg?branch=dev)](https://travis-ci.org/QualiSystems/cloudshell-logging)
-[![codecov](https://codecov.io/gh/QualiSystems/cloudshell-logging/branch/dev/graph/badge.svg)](https://codecov.io/gh/QualiSystems/cloudshell-logging)
+[![Build Status](https://travis-ci.org/QualiSystems/cloudshell-logging.svg?branch=master)](https://travis-ci.org/QualiSystems/cloudshell-logging)
+[![codecov](https://codecov.io/gh/QualiSystems/cloudshell-logging/branch/master/graph/badge.svg)](https://codecov.io/gh/QualiSystems/cloudshell-logging)
 [![PyPI version](https://badge.fury.io/py/cloudshell-logging.svg)](https://badge.fury.io/py/cloudshell-logging)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 
