@@ -3,7 +3,12 @@ import multiprocessing
 import sys
 import threading
 import traceback
-from _queue import Empty
+
+if sys.version_info >= (3, 0):
+    from _queue import Empty
+else:
+    from Queue import Empty
+
 from logging.handlers import RotatingFileHandler
 
 
