@@ -40,7 +40,7 @@ class TestMultiProcessingLog(TestCase):
 
 class TestMultiProcessingLogThreads(TestCase):
     THREADS = 100
-    MESSAGES_PER_THREAD = 100
+    MESSAGES_PER_THREAD = 200
 
     def setUp(self):
         test = TestMultiProcessingLog()
