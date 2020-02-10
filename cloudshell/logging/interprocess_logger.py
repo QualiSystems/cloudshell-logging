@@ -21,7 +21,7 @@ class MultiProcessingLog(logging.Handler):
 
         self._handler = RotatingFileHandler(name, mode, maxsize, rotate)
         self.queue = multiprocessing.Queue(-1)
-        self.baseFilename = name
+        # self.baseFilename = name
         self._is_closed = False
         self._receive_thread = threading.Thread(target=self.receive)
         self._receive_thread.daemon = True
