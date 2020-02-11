@@ -6,7 +6,7 @@ import traceback
 from logging.handlers import RotatingFileHandler
 
 if sys.version_info >= (3, 0):
-    from _queue import Empty
+    from queue import Empty
 else:
     from Queue import Empty
 
@@ -21,7 +21,6 @@ class MultiProcessingLog(logging.Handler):
 
         self._handler = RotatingFileHandler(name, mode, maxsize, rotate)
         self.queue = multiprocessing.Queue(-1)
-        # self.baseFilename = name
         self._is_closed = False
         self._receive_thread = threading.Thread(target=self.receive)
         self._receive_thread.daemon = True
@@ -49,7 +48,7 @@ class MultiProcessingLog(logging.Handler):
 
     def send(self, s):
         if not self._is_closed:
-            self.queue.put_nowait(s)
+            self.queue.put(s)
         else:
             raise MultiProcessingLogException("Cannot send record, when handler closed")
 
