@@ -52,8 +52,8 @@ class QSConfigParser:
         return QSConfigParser._configDict
 
     @staticmethod
-    def get_setting(dict_section=None, dict_key=None):
+    def get_setting(dict_section=None, dict_key=None, default_value=None):
         settings_dict = QSConfigParser.get_dict(dict_section)
         if settings_dict and dict_key and dict_key.lower() in settings_dict:
             return settings_dict[dict_key.lower()]
-        return None
+        return default_value

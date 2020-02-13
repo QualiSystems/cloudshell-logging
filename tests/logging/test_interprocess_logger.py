@@ -1,5 +1,5 @@
+import multiprocessing
 import sys
-import threading
 
 from cloudshell.logging.interprocess_logger import MultiProcessingLog
 
@@ -38,7 +38,7 @@ class TestMultiProcessingLog(TestCase):
         thread.start.assert_called_once_with()
 
 
-class TestMultiProcessingLogThreads(TestCase):
+class TestMultiProcessingLogExecution(TestCase):
     THREADS = 200
     MESSAGES_PER_THREAD = 1000
 
@@ -59,7 +59,7 @@ class TestMultiProcessingLogThreads(TestCase):
         return instance
 
     @mock.patch("cloudshell.logging.interprocess_logger.logging.Handler")
-    def test_multi_thread_call_count(self, handler):
+    def test_multiprocessing_call_count(self, handler):
         self._handler.emit = self._emmit_mess
         self._send_multi_cl_mess_and_close()
         self.assertEqual(self.call_count, self.THREADS * self.MESSAGES_PER_THREAD)
@@ -68,7 +68,7 @@ class TestMultiProcessingLogThreads(TestCase):
         thread_list = []
         for cl_id in range(self.THREADS):
             thread_list.append(
-                threading.Thread(
+                multiprocessing.Process(
                     target=self._send_messages_for_cl,
                     args=(cl_id, self.MESSAGES_PER_THREAD),
                 )

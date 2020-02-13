@@ -9,6 +9,7 @@ import traceback
 from datetime import datetime
 from functools import wraps
 from logging import StreamHandler
+from logging.handlers import RotatingFileHandler
 
 from cloudshell.logging.interprocess_logger import MultiProcessingLog
 from cloudshell.logging.qs_config_parser import QSConfigParser
@@ -70,6 +71,17 @@ def get_settings():
     )
     config["TIME_FORMAT"] = time_format
 
+    config["MULTIPROCESSING"] = (
+        QSConfigParser.get_setting(LOG_SECTION, "MULTIPROCESSING", "true").lower()
+        == "true"
+    )
+
+    config["LOG_ROTATE_MAX_BYTES"] = int(
+        QSConfigParser.get_setting(LOG_SECTION, "LOG_ROTATE_MAX_BYTES", "0")
+    )
+    config["LOG_ROTATE_BACKUP_COUNT"] = int(
+        QSConfigParser.get_setting(LOG_SECTION, "LOG_ROTATE_BACKUP_COUNT", "0")
+    )
     return config
 
 
@@ -237,7 +249,14 @@ def _create_logger(log_group, log_category, log_file_prefix):
     log_path = get_accessible_log_path(log_group, log_file_prefix)
 
     if log_path:
-        hdlr = MultiProcessingLog(log_path, mode="a")
+        multiprocessing = config.get("MULTIPROCESSING", True)
+        max_bytes = config.get("LOG_ROTATE_MAX_BYTES", 0)
+        backup_count = config.get("LOG_ROTATE_BACKUP_COUNT", 0)
+        mode = "a"
+        if multiprocessing:
+            hdlr = MultiProcessingLog(log_path, mode, max_bytes, backup_count)
+        else:
+            hdlr = RotatingFileHandler(log_path, mode, max_bytes, backup_count)
     else:
         hdlr = StreamHandler(sys.stdout)
 
