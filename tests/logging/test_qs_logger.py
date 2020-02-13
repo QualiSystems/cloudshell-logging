@@ -18,7 +18,6 @@ else:
     import mock
     from unittest import TestCase
 
-
 CUR_DIR = os.path.dirname(__file__)
 full_settings = MagicMock(
     return_value={
@@ -86,13 +85,16 @@ class TestQSLogger(TestCase):
     def test_get_settings(self):
         """Test suite for get_settings method."""
         exp_response = {
-            "WINDOWS_LOG_PATH": r"{ALLUSERSPROFILE}\QualiSystems\logs",
+            "LOG_LEVEL": "INFO",
+            "FORMAT": "%(asctime)s [%(levelname)s]: "
+            "%(name)s %(module)s - %(funcName)-20s %(message)s",
             "UNIX_LOG_PATH": "/var/log/qualisystems",
+            "WINDOWS_LOG_PATH": "{ALLUSERSPROFILE}\\QualiSystems\\logs",
             "DEFAULT_LOG_PATH": "../../Logs",
             "TIME_FORMAT": "%d-%b-%Y--%H-%M-%S",
-            "LOG_LEVEL": "INFO",
-            "FORMAT": "%(asctime)s [%(levelname)s]: %(name)s %(module)s - "
-            "%(funcName)-20s %(message)s",
+            "MULTIPROCESSING": True,
+            "LOG_ROTATE_MAX_BYTES": 0,
+            "LOG_ROTATE_BACKUP_COUNT": 0,
         }
 
         self.assertEqual(qs_logger.get_settings(), exp_response)
