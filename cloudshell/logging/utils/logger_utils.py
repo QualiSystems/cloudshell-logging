@@ -55,7 +55,7 @@ class LoggerOperations(object):
         """
         Change handler file.
 
-        Move existing data from current file to the new file,
+        Move existing data from current file to new file,
         switch handler to new file, remove unused file.
 
         Args:
@@ -93,6 +93,13 @@ class LoggerOperations(object):
             handler.baseFilename = new_file_path
 
     def rename_log_file(self, new_name):
+        """
+        Change log file name.
+
+        Move data to file with new_name in the same directory.
+        Args:
+            :param new_name:
+        """
         new_file_path = os.path.join(
             os.path.dirname(self.get_log_file_path()), new_name
         )
