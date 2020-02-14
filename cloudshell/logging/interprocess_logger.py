@@ -2,6 +2,7 @@ import logging
 import multiprocessing
 import sys
 import threading
+import time
 import traceback
 from logging.handlers import RotatingFileHandler
 
@@ -19,7 +20,7 @@ class MultiProcessingLog(logging.Handler):
     def __init__(self, name, mode="a", maxsize=0, rotate=0):
         logging.Handler.__init__(self)
 
-        self._handler = RotatingFileHandler(name, mode, maxsize, rotate)
+        self.handler = RotatingFileHandler(name, mode, maxsize, rotate)
         self.queue = multiprocessing.Queue(-1)
         self._is_closed = False
         self._receive_thread = threading.Thread(target=self.receive)
@@ -28,13 +29,13 @@ class MultiProcessingLog(logging.Handler):
 
     def setFormatter(self, fmt):
         logging.Handler.setFormatter(self, fmt)
-        self._handler.setFormatter(fmt)
+        self.handler.setFormatter(fmt)
 
     def receive(self):
         while not self._is_closed or not self.queue.empty():
             try:
                 record = self.queue.get(block=True, timeout=0.1)
-                self._handler.emit(record)
+                self.handler.emit(record)
             except Empty:
                 continue
             except (KeyboardInterrupt, SystemExit):
@@ -75,8 +76,12 @@ class MultiProcessingLog(logging.Handler):
         except Exception:
             self.handleError(record)
 
+    def flush(self):
+        while not self.queue.empty():
+            time.sleep(0.1)
+
     def close(self):
         self._is_closed = True
         self._receive_thread.join(5)
-        self._handler.close()
+        self.handler.close()
         logging.Handler.close(self)

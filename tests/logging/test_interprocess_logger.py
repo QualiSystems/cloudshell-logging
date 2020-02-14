@@ -31,7 +31,7 @@ class TestMultiProcessingLog(TestCase):
         thread = mock.Mock()
         threading.Thread.return_value = thread
         instance = self._create_instance()
-        self.assertIs(instance._handler, self.log_file_handler)
+        self.assertIs(instance.handler, self.log_file_handler)
         threading.Thread.assert_called_once_with(target=receive)
         self.assertIs(thread, instance._receive_thread)
         self.assertEqual(thread.daemon, True)
