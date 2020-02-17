@@ -53,7 +53,7 @@ class LoggerOperations(object):
 
     def move_to_file(self, new_file_path):
         """
-        Change handler file.
+        Change handler's file.
 
         Move existing data from current file to new file,
         switch handler to new file, remove unused file.
