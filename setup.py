@@ -13,8 +13,10 @@ if StrictVersion(setuptools_version) < StrictVersion("40.0"):
         if s != 0:
             raise Exception
     except Exception:
-        raise Exception("Setuptools>40 have to be installed")
-
+        raise Exception(
+            "Failed to update setuptools. Setuptools>40 have to be installed"
+        )
+    # reran setup.py
     os.execl(python, python, *sys.argv)
 
 
@@ -35,6 +37,7 @@ setup(
     packages=find_packages(),
     install_requires=required,
     tests_require=required_for_tests,
+    setup_requires=["setuptools>=40"],
     test_suite="nose.collector",
     version=version_from_file,
     description="QualiSystems Logger Package",
