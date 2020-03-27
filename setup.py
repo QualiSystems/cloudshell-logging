@@ -1,6 +1,24 @@
 import os
+from distutils.version import StrictVersion
 
 from setuptools import find_packages, setup
+from setuptools.version import __version__ as setuptools_version
+
+if StrictVersion(setuptools_version) < StrictVersion("40.0"):
+    import sys
+
+    python = sys.executable
+    try:
+        s = os.system('{} -m pip install "setuptools>=40"'.format(python))
+        if s != 0:
+            raise Exception
+    except Exception:
+        raise Exception(
+            "Failed to update setuptools. Setuptools>40 have to be installed"
+        )
+    # reran setup.py
+    os.execl(python, python, *sys.argv)
+
 
 with open(os.path.join("version.txt")) as version_file:
     version_from_file = version_file.read().strip()
@@ -19,6 +37,7 @@ setup(
     packages=find_packages(),
     install_requires=required,
     tests_require=required_for_tests,
+    setup_requires=["setuptools>=40"],
     test_suite="nose.collector",
     version=version_from_file,
     description="QualiSystems Logger Package",
