@@ -16,10 +16,10 @@ class MultiProcessingLogException(Exception):
 
 
 class MultiProcessingLog(logging.Handler):
-    def __init__(self, name, mode="a", maxsize=0, rotate=0):
+    def __init__(self, name, mode="a", maxsize=0, rotate=0, delay=True):
         logging.Handler.__init__(self)
 
-        self._handler = RotatingFileHandler(name, mode, maxsize, rotate)
+        self._handler = RotatingFileHandler(name, mode, maxsize, rotate, delay=delay)
         self.queue = multiprocessing.Queue(-1)
         self.baseFilename = name
         self._is_closed = False

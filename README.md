@@ -61,7 +61,12 @@ To change the log level on the driver level, edit the configuration file `[venv]
 For example, changing the the log level to “WARNING”:
 ```python
 [Logging]
+;Possible Log Levels: DEBUG, INFO, WARNING, ERROR, CRITICAL
 LOG_LEVEL='WARNING'
+;Possible Log Priorities: ENV, CONFIG
+;ENV - get log level from environment variable specified in Execution Server customer.config
+;CONFIG - get log level from current configuration file
+LOG_PRIORITY='ENV'
 LOG_FORMAT= '%(asctime)s [%(levelname)s]: %(name)s %(module)s - %(funcName)-20s %(message)s'
 TIME_FORMAT= '%d-%b-%Y--%H-%M-%S'
 WINDOWS_LOG_PATH='{ALLUSERSPROFILE}\QualiSystems\logs'
