@@ -30,6 +30,7 @@ DEFAULT_FORMAT = (
 )
 DEFAULT_TIME_FORMAT = "%Y%m%d%H%M%S"
 DEFAULT_LEVEL = "INFO"
+DEFAULT_PRIORITY = "ENV"
 LOG_SECTION = "Logging"
 WINDOWS_OS_FAMILY = "nt"
 
@@ -42,33 +43,33 @@ def get_settings():
 
     :return: config obj
     """
-    config = {}
-    # Level
-    log_level = QSConfigParser.get_setting(LOG_SECTION, "LOG_LEVEL") or DEFAULT_LEVEL
-    config["LOG_LEVEL"] = log_level
 
-    # Log format
-    log_format = QSConfigParser.get_setting(LOG_SECTION, "LOG_FORMAT") or DEFAULT_FORMAT
-    config["FORMAT"] = log_format
+    config = QSConfigParser().get_config(section=LOG_SECTION)
 
-    # UNIX log path
-    config["UNIX_LOG_PATH"] = QSConfigParser.get_setting(LOG_SECTION, "UNIX_LOG_PATH")
+    priority = config.get("LOG_PRIORITY", DEFAULT_PRIORITY)
+    if priority == "ENV" and os.getenv("LOG_LEVEL"):
+        config["LOG_LEVEL"] = os.getenv("LOG_LEVEL")
+    elif priority == "CONFIG":
+        config["LOG_LEVEL"] = config.get("LOG_LEVEL", DEFAULT_LEVEL)
+    else:
+        config["LOG_LEVEL"] = DEFAULT_LEVEL
 
-    # Windows log path
-    config["WINDOWS_LOG_PATH"] = QSConfigParser.get_setting(
-        LOG_SECTION, "WINDOWS_LOG_PATH"
-    )
+    # log_level = None
+    # for seq in config.get("LOG_PRIORITY", "ENV,CONFIG,DEFAULT").split(","):
+    #     seq = seq.strip("'").strip('"').strip()
+    #     if seq == "ENV":
+    #         log_level = os.getenv("LOG_LEVEL")
+    #     elif seq == "CONFIG":
+    #         log_level = config.get("LOG_LEVEL")
+    #     elif seq == "DEFAULT":
+    #         log_level = DEFAULT_LEVEL
+    #
+    #     if log_level:
+    #         break
 
-    # Default log path for all systems
-    config["DEFAULT_LOG_PATH"] = QSConfigParser.get_setting(
-        LOG_SECTION, "DEFAULT_LOG_PATH"
-    )
-
-    # Time format
-    time_format = (
-        QSConfigParser.get_setting(LOG_SECTION, "TIME_FORMAT") or DEFAULT_TIME_FORMAT
-    )
-    config["TIME_FORMAT"] = time_format
+    # config["LOG_LEVEL"] = log_level
+    config["LOG_FORMAT"] = config.get("LOG_FORMAT") or DEFAULT_FORMAT
+    config["TIME_FORMAT"] = config.get("TIME_FORMAT") or DEFAULT_TIME_FORMAT
 
     return config
 
@@ -185,12 +186,18 @@ def get_qs_logger(log_group="Ungrouped", log_category="QS", log_file_prefix="QS"
     :return: the logger object
     :rtype: logging.Logger
     """
+    config = get_settings()
     _LOGGER_LOCK.acquire()
     try:
         if log_group in _LOGGER_CONTAINER:
             logger = _LOGGER_CONTAINER[log_group]
+            try:
+                logger.setLevel(config["LOG_LEVEL"])
+            except ValueError as err:
+                logger.setLevel(DEFAULT_LEVEL)
+                logger.warning(err)
         else:
-            logger = _create_logger(log_group, log_category, log_file_prefix)
+            logger = _create_logger(log_group, log_category, log_file_prefix, config=config)
             _LOGGER_CONTAINER[log_group] = logger
     finally:
         _LOGGER_LOCK.release()
@@ -198,7 +205,7 @@ def get_qs_logger(log_group="Ungrouped", log_category="QS", log_file_prefix="QS"
     return logger
 
 
-def _create_logger(log_group, log_category, log_file_prefix):
+def _create_logger(log_group, log_category, log_file_prefix, config=None):
     """Create logging handler.
 
     :param log_group: This folder will be grouped under this name.
@@ -223,17 +230,16 @@ def _create_logger(log_group, log_category, log_file_prefix):
     log_file_prefix = re.sub(" ", "_", log_file_prefix)
     log_category = "%s.%s" % (log_category, log_file_prefix)
 
-    config = get_settings()
+    config = config or get_settings()
 
-    if "LOG_LEVEL" in os.environ:
-        log_level = os.environ["LOG_LEVEL"]
-    elif config["LOG_LEVEL"]:
-        log_level = config["LOG_LEVEL"]
-    else:
-        log_level = DEFAULT_LEVEL
+    logger = logging.getLogger(log_category)
+    try:
+        logger.setLevel(config["LOG_LEVEL"])
+    except ValueError as err:
+        logger.setLevel(DEFAULT_LEVEL)
+        logger.warning(err)
 
-    logger = logging.Logger(log_category, log_level)
-    formatter = MultiLineFormatter(config["FORMAT"])
+    formatter = MultiLineFormatter(config["LOG_FORMAT"])
     log_path = get_accessible_log_path(log_group, log_file_prefix)
 
     if log_path:

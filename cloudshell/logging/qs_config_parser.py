@@ -18,42 +18,23 @@ class QSConfigParser:
     def __init__(self):
         self._config_parser = ConfigParser.RawConfigParser()
 
-        file_path = os.path.dirname(__file__)
-
-        self._config_file = os.getenv(
-            "QS_CONFIG", os.path.join(file_path, DEFAULT_CONFIG_PATH)
+    def _get_full_config(self):
+        """  """
+        config_file = os.getenv(
+            "QS_CONFIG", os.path.join(os.path.dirname(__file__), DEFAULT_CONFIG_PATH)
         )
-        self._read_config_file()
-        self._create_dict()
-
-    def _read_config_file(self):
+        config_dict = {}
         try:
-            self._config_parser.read(self._config_file)
-        except Exception:
+            self._config_parser.read(config_file)
+
+            for section in self._config_parser.sections():
+                config_dict[section] = {}
+                for key, val in self._config_parser.items(section):
+                    config_dict[section][key.upper()] = val.strip("'")
+        except Exception as e:
             pass
 
-    def _create_dict(self):
-        config_dict = {}
-        for section in self._config_parser.sections():
-            config_dict[section] = {}
-            for key, val in self._config_parser.items(section):
-                config_dict[section][key] = val.replace("'", "")
-        QSConfigParser._configDict = config_dict
+        return config_dict
 
-    @staticmethod
-    def get_dict(dict_section=None):
-        if QSConfigParser._configDict is None:
-            QSConfigParser()
-        if dict_section:
-            if dict_section in QSConfigParser._configDict:
-                return QSConfigParser._configDict[dict_section]
-            else:
-                return None
-        return QSConfigParser._configDict
-
-    @staticmethod
-    def get_setting(dict_section=None, dict_key=None):
-        settings_dict = QSConfigParser.get_dict(dict_section)
-        if settings_dict and dict_key and dict_key.lower() in settings_dict:
-            return settings_dict[dict_key.lower()]
-        return None
+    def get_config(self, section=None):
+        return self._get_full_config().get(section, {})
