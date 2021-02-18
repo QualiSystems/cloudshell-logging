@@ -31,7 +31,7 @@ class QSConfigParser:
                 config_dict[section] = {}
                 for key, val in self._config_parser.items(section):
                     config_dict[section][key.upper()] = val.strip("'")
-        except Exception as e:
+        except Exception:
             pass
 
         return config_dict

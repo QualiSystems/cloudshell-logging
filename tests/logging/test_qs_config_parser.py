@@ -38,27 +38,27 @@ class TestQSConfigParser(TestCase):
             del os.environ["QS_CONFIG"]
 
     def test__get_config_success(self):
-        """ Test suite for _get_full_config method """
+        """Test suite for _get_full_config method."""
         self.assertEqual(QSConfigParser()._get_full_config(), self.exp_response)
 
     def test__get_config_wrong_config_file(self):
-        """ Test suite for _get_full_config method """
+        """Test suite for _get_full_config method."""
         os.environ["QS_CONFIG"] = os.path.join(
             CUR_DIR, "config/wrong_conf_file_path.ini"
         )
         self.assertEqual(QSConfigParser()._get_full_config(), {})
 
     def test_get_config_success(self):
-        """ Test suite for get_config method """
+        """Test suite for get_config method."""
         self.assertEqual(QSConfigParser().get_config(), self.exp_response)
         self.assertEqual(
             QSConfigParser().get_config("Logging"), self.exp_response["Logging"]
         )
-        self.assertEqual(QSConfigParser().get_config("wrong_section_name"), dict())
+        self.assertEqual(QSConfigParser().get_config("wrong_section_name"), {})
 
     def test_get_config_wrong_config_file(self):
         os.environ["QS_CONFIG"] = os.path.join(
             CUR_DIR, "config/wrong_conf_file_path.ini"
         )
-        self.assertEqual(QSConfigParser().get_config(), dict())
-        self.assertEqual(QSConfigParser().get_config("Logging"), dict())
+        self.assertEqual(QSConfigParser().get_config(), {})
+        self.assertEqual(QSConfigParser().get_config("Logging"), {})
