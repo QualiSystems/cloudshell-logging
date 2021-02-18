@@ -37,4 +37,7 @@ class QSConfigParser:
         return config_dict
 
     def get_config(self, section=None):
-        return self._get_full_config().get(section, {})
+        if section is not None:
+            return self._get_full_config().get(section, {})
+        else:
+            return self._get_full_config()

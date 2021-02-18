@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/QualiSystems/cloudshell-logging.svg?branch=master)](https://travis-ci.org/QualiSystems/cloudshell-logging)
 [![codecov](https://codecov.io/gh/QualiSystems/cloudshell-logging/branch/master/graph/badge.svg)](https://codecov.io/gh/QualiSystems/cloudshell-logging)
-[![PyPI version](https://badge.fury.io/py/cloudshell-logging.svg)](https://badge.fury.io/py/cloudshell-logging)
+[![PyPI version](https://shields.io/pypi/v/cloudshell-logging)](https://pypi.org/project/cloudshell-logging)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 
 <p align="center">
@@ -48,15 +48,25 @@ You can then use the regular logging level syntax to write messages as a part of
 ```python
 logger.debug("debug message")
 logger.info("info message")
-logger.warn("warning message"
+logger.warning("warning message")
 logger.error("error message")
 ```
 
-Only messages which are greater than the log level currently set for the driver will be saved to file. For example, if the log level is “info”, only log levels “warning” and “error” apply.
+Only messages which are not less than the log level currently set for the driver will be saved to file. For example, if the log level is “info”, only log levels “info”, “warning”, “error” and “critical” apply.
 
-Typically, changing the log level to a more verbose value would be done only in order to debug an issue, as writing too much to the logs can be expensive. You can change the logging level on the Execution Server or driver level.
+Typically, changing the log level to a more verbose value would be done only in order to debug an issue, as writing too much to the logs can be expensive.
 
-To change the log level on the driver level, edit the configuration file `[venv]\[drivername]\Lib\site-packages\cloudshell\core\logger\qs_config.ini` and change the log level value.
+There are two places to manage the logging level:
+* Execution Server (global level)
+* Driver environment (driver level)
+
+To change the global log level for all drivers make changes based on topic [Setting the logging level for Python drivers](https://help.quali.com/Online%20Help/0.0/Portal/Content/Admn/Tst-n-Cmd-Exc.htm)
+
+To change the log level on the driver level, edit the configuration file `[venv]\[drivername]\Lib\site-packages\cloudshell\core\logger\qs_config.ini` and change the LOG_LEVEL and LOG_PRIORITY values.
+
+```
+Changing LOG_PRIORITY attribute to CONFIG is mandatory to override global log level value which can be set in customer.config
+```
 
 For example, changing the the log level to “WARNING”:
 ```python
@@ -66,7 +76,7 @@ LOG_LEVEL='WARNING'
 ;Possible Log Priorities: ENV, CONFIG
 ;ENV - get log level from environment variable specified in Execution Server customer.config
 ;CONFIG - get log level from current configuration file
-LOG_PRIORITY='ENV'
+LOG_PRIORITY='CONFIG'
 LOG_FORMAT= '%(asctime)s [%(levelname)s]: %(name)s %(module)s - %(funcName)-20s %(message)s'
 TIME_FORMAT= '%d-%b-%Y--%H-%M-%S'
 WINDOWS_LOG_PATH='{ALLUSERSPROFILE}\QualiSystems\logs'
