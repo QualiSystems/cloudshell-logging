@@ -39,7 +39,6 @@ _LOGGER_LOCK = threading.Lock()
 
 # TODO: Need to be re-written
 class QSLogger(logging.Logger):
-
     def setLevel(self, level):
         super(QSLogger, self).setLevel(level)
         if hasattr(self, "_cache"):
@@ -51,7 +50,6 @@ def get_settings():
 
     :return: config obj
     """
-
     config = QSConfigParser().get_config(section=LOG_SECTION)
 
     priority = config.get("LOG_PRIORITY", DEFAULT_PRIORITY)
@@ -62,7 +60,9 @@ def get_settings():
     else:
         config["LOG_LEVEL"] = DEFAULT_LEVEL
 
-    config["LOG_FORMAT"] = config.get("LOG_FORMAT") or config.get("FORMAT") or DEFAULT_FORMAT
+    config["LOG_FORMAT"] = (
+            config.get("LOG_FORMAT") or config.get("FORMAT") or DEFAULT_FORMAT
+    )
     config["TIME_FORMAT"] = config.get("TIME_FORMAT") or DEFAULT_TIME_FORMAT
 
     return config
@@ -191,7 +191,9 @@ def get_qs_logger(log_group="Ungrouped", log_category="QS", log_file_prefix="QS"
                 logger.setLevel(DEFAULT_LEVEL)
                 logger.warning(err)
         else:
-            logger = _create_logger(log_group, log_category, log_file_prefix, config=config)
+            logger = _create_logger(
+                log_group, log_category, log_file_prefix, config=config
+            )
             _LOGGER_CONTAINER[log_group] = logger
     finally:
         _LOGGER_LOCK.release()

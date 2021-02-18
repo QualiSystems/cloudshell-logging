@@ -51,7 +51,9 @@ class TestQSConfigParser(TestCase):
     def test_get_config_success(self):
         """ Test suite for get_config method """
         self.assertEqual(QSConfigParser().get_config(), self.exp_response)
-        self.assertEqual(QSConfigParser().get_config("Logging"), self.exp_response["Logging"])
+        self.assertEqual(
+            QSConfigParser().get_config("Logging"), self.exp_response["Logging"]
+        )
         self.assertEqual(QSConfigParser().get_config("wrong_section_name"), dict())
 
     def test_get_config_wrong_config_file(self):
