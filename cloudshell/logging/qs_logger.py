@@ -61,7 +61,7 @@ def get_settings():
         config["LOG_LEVEL"] = DEFAULT_LEVEL
 
     config["LOG_FORMAT"] = (
-            config.get("LOG_FORMAT") or config.get("FORMAT") or DEFAULT_FORMAT
+        config.get("LOG_FORMAT") or config.get("FORMAT") or DEFAULT_FORMAT
     )
     config["TIME_FORMAT"] = config.get("TIME_FORMAT") or DEFAULT_TIME_FORMAT
 
