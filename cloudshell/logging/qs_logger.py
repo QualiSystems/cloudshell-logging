@@ -8,7 +8,6 @@ import time
 import traceback
 from datetime import datetime
 from functools import wraps
-from logging import StreamHandler
 
 from cloudshell.logging.interprocess_logger import MultiProcessingLog
 from cloudshell.logging.qs_config_parser import QSConfigParser
@@ -38,6 +37,15 @@ _LOGGER_CONTAINER = {}
 _LOGGER_LOCK = threading.Lock()
 
 
+# TODO: Need to be re-written
+class QSLogger(logging.Logger):
+
+    def setLevel(self, level):
+        super(QSLogger, self).setLevel(level)
+        if hasattr(self, "_cache"):
+            self._cache.clear()
+
+
 def get_settings():
     """Read configuration settings from config or use DEFAULTS.
 
@@ -54,21 +62,7 @@ def get_settings():
     else:
         config["LOG_LEVEL"] = DEFAULT_LEVEL
 
-    # log_level = None
-    # for seq in config.get("LOG_PRIORITY", "ENV,CONFIG,DEFAULT").split(","):
-    #     seq = seq.strip("'").strip('"').strip()
-    #     if seq == "ENV":
-    #         log_level = os.getenv("LOG_LEVEL")
-    #     elif seq == "CONFIG":
-    #         log_level = config.get("LOG_LEVEL")
-    #     elif seq == "DEFAULT":
-    #         log_level = DEFAULT_LEVEL
-    #
-    #     if log_level:
-    #         break
-
-    # config["LOG_LEVEL"] = log_level
-    config["LOG_FORMAT"] = config.get("LOG_FORMAT") or DEFAULT_FORMAT
+    config["LOG_FORMAT"] = config.get("LOG_FORMAT") or config.get("FORMAT") or DEFAULT_FORMAT
     config["TIME_FORMAT"] = config.get("TIME_FORMAT") or DEFAULT_TIME_FORMAT
 
     return config
@@ -232,7 +226,7 @@ def _create_logger(log_group, log_category, log_file_prefix, config=None):
 
     config = config or get_settings()
 
-    logger = logging.getLogger(log_category)
+    logger = QSLogger(name=log_category)
     try:
         logger.setLevel(config["LOG_LEVEL"])
     except ValueError as err:
@@ -245,7 +239,7 @@ def _create_logger(log_group, log_category, log_file_prefix, config=None):
     if log_path:
         hdlr = MultiProcessingLog(log_path, mode="a")
     else:
-        hdlr = StreamHandler(sys.stdout)
+        hdlr = logging.StreamHandler(sys.stdout)
 
     hdlr.setFormatter(formatter)
     logger.addHandler(hdlr)

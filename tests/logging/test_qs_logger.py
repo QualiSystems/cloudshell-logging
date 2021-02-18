@@ -25,7 +25,7 @@ full_settings = MagicMock(
         "LOG_PATH": "../../Logs",
         "TIME_FORMAT": "%d-%b-%Y--%H-%M-%S",
         "LOG_LEVEL": "INFO",
-        "FORMAT": "%(asctime)s [%(levelname)s]: %(name)s %(module)s - "
+        "LOG_FORMAT": "%(asctime)s [%(levelname)s]: %(name)s %(module)s - "
         "%(funcName)-20s %(message)s",
     }
 )
@@ -34,7 +34,7 @@ cut_settings = MagicMock(
     return_value={
         "TIME_FORMAT": "%d-%b-%Y--%H-%M-%S",
         "LOG_LEVEL": "INFO",
-        "FORMAT": "%(asctime)s [%(levelname)s]: %(name)s %(module)s - "
+        "LOG_FORMAT": "%(asctime)s [%(levelname)s]: %(name)s %(module)s - "
         "%(funcName)-20s %(message)s",
     }
 )
@@ -44,7 +44,7 @@ wrong_settings = MagicMock(
         "LOG_PATH": None,
         "TIME_FORMAT": "%d-%b-%Y--%H-%M-%S",
         "LOG_LEVEL": "INFO",
-        "FORMAT": "%(asctime)s [%(levelname)s]: %(name)s %(module)s - "
+        "LOG_FORMAT": "%(asctime)s [%(levelname)s]: %(name)s %(module)s - "
         "%(funcName)-20s %(message)s",
     }
 )
@@ -91,7 +91,7 @@ class TestQSLogger(TestCase):
             "DEFAULT_LOG_PATH": "../../Logs",
             "TIME_FORMAT": "%d-%b-%Y--%H-%M-%S",
             "LOG_LEVEL": "INFO",
-            "FORMAT": "%(asctime)s [%(levelname)s]: %(name)s %(module)s - "
+            "LOG_FORMAT": "%(asctime)s [%(levelname)s]: %(name)s %(module)s - "
             "%(funcName)-20s %(message)s",
         }
 
@@ -199,7 +199,7 @@ class TestQSLogger(TestCase):
         qs_logger.get_settings = cut_settings
         self.assertTrue(
             isinstance(
-                qs_logger.get_qs_logger(log_group="test2").handlers[0],
+                qs_logger.get_qs_logger(log_group="stream").handlers[0],
                 logging.StreamHandler,
             )
         )
