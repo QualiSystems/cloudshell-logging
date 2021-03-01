@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/QualiSystems/cloudshell-logging.svg?branch=master)](https://travis-ci.org/QualiSystems/cloudshell-logging)
+[![Build status](https://github.com/QualiSystems/cloudshell-logging/workflows/CI/badge.svg?branch=master)](https://github.com/QualiSystems/cloudshell-logging/actions?query=branch%3Amaster)
 [![codecov](https://codecov.io/gh/QualiSystems/cloudshell-logging/branch/master/graph/badge.svg)](https://codecov.io/gh/QualiSystems/cloudshell-logging)
 [![PyPI version](https://shields.io/pypi/v/cloudshell-logging)](https://pypi.org/project/cloudshell-logging)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
