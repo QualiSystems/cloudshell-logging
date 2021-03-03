@@ -102,7 +102,9 @@ class TestQSLogger(TestCase):
             "%(funcName)-20s %(message)s",
         }
         names_to_remove = ["LOG_LEVEL"]
-        modified_environ = {k: v for k, v in os.environ.items() if k not in names_to_remove}
+        modified_environ = {
+            k: v for k, v in os.environ.items() if k not in names_to_remove
+        }
         with mock.patch.dict(os.environ, modified_environ, clear=True):
             self.assertEqual(qs_logger.get_settings(), exp_response)
 
@@ -151,7 +153,7 @@ class TestQSLogger(TestCase):
         parser = parser_class.return_value
         parser.get_config.return_value = {
             "LOG_PRIORITY": "CONFIG",
-            "LOG_LEVEL": "CRITICAL"
+            "LOG_LEVEL": "CRITICAL",
         }
 
         exp_response = {
