@@ -19,7 +19,7 @@ The **cloudshell-logging** open source python package creates a thread and proce
 ## Usage
 
 #### Where can I see the execution logs?
-All logs are saved on the Execution Server where the script or driver is running (except for L1 shell logs, which reside on the Quali Server). For exact locations, see the Troubleshooting Guide’s [Collecting Logs](https://help.quali.com/doc/0.0/Troubleshooting/Content/Troubleshooting/Collecting-logs.htm) article.
+All logs are saved on the Execution Server where the script or driver is running (except for L1 shell logs, which reside on the Quali Server). For exact locations, see the Troubleshooting Guide’s [Collecting Logs](https://help.quali.com/online%20help/0.0/cloudshell/Content/Troubleshooting/Collecting-logs.htm) article.
 
 #### How do I customize my shell or script’s logging policy?
 The simplest way to get a hold of a logger object is to use the **get_qs_logger** module:
@@ -60,7 +60,7 @@ There are two places to manage the logging level:
 * Execution Server (global level)
 * Driver environment (driver level)
 
-To change the global log level for all drivers make changes based on topic [Setting the logging level for Python drivers](https://help.quali.com/Online%20Help/0.0/Portal/Content/Admn/Tst-n-Cmd-Exc.htm)
+To change the global log level for all drivers make changes based on topic [Setting the logging level for Python drivers](https://help.quali.com/Online%20Help/0.0/Portal/Content/Admn/Tst-n-Cmd-Exc.htm#Setting).
 
 To change the log level on the driver level, edit the configuration file `[venv]\[drivername]\Lib\site-packages\cloudshell\core\logger\qs_config.ini` and change the LOG_LEVEL and LOG_PRIORITY values.
 
@@ -68,7 +68,7 @@ To change the log level on the driver level, edit the configuration file `[venv]
 Changing LOG_PRIORITY attribute to CONFIG is mandatory to override global log level value which can be set in customer.config
 ```
 
-For example, changing the the log level to “WARNING”:
+For example, changing the log level to “WARNING”:
 ```python
 [Logging]
 ;Possible Log Levels: DEBUG, INFO, WARNING, ERROR, CRITICAL
@@ -86,4 +86,4 @@ DEFAULT_LOG_PATH='../../Logs'
 Note that this change is only valid for that virtual environment, so if you upgrade the shell or the script, CloudShell will create a new virtual environment that uses the default values.
  
 
-We use tox and pre-commit for testing. [Services description](https://github.com/QualiSystems/cloudshell-package-repo-template#description-of-services)
+We use tox and pre-commit for testing. For details, click [here](https://github.com/QualiSystems/cloudshell-package-repo-template#description-of-services).

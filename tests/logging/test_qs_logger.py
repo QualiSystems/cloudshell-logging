@@ -24,7 +24,8 @@ full_settings = MagicMock(
     return_value={
         "LOG_PATH": "../../Logs",
         "TIME_FORMAT": "%d-%b-%Y--%H-%M-%S",
-        "LOG_LEVEL": "INFO",
+        "LOG_LEVEL": "ERROR",
+        "LOG_PRIORITY": "ENV",
         "LOG_FORMAT": "%(asctime)s [%(levelname)s]: %(name)s %(module)s - "
         "%(funcName)-20s %(message)s",
     }
@@ -33,7 +34,8 @@ full_settings = MagicMock(
 cut_settings = MagicMock(
     return_value={
         "TIME_FORMAT": "%d-%b-%Y--%H-%M-%S",
-        "LOG_LEVEL": "INFO",
+        "LOG_LEVEL": "ERROR",
+        "LOG_PRIORITY": "ENV",
         "LOG_FORMAT": "%(asctime)s [%(levelname)s]: %(name)s %(module)s - "
         "%(funcName)-20s %(message)s",
     }
@@ -43,7 +45,7 @@ wrong_settings = MagicMock(
     return_value={
         "LOG_PATH": None,
         "TIME_FORMAT": "%d-%b-%Y--%H-%M-%S",
-        "LOG_LEVEL": "INFO",
+        "LOG_LEVEL": "ERROR",
         "LOG_FORMAT": "%(asctime)s [%(levelname)s]: %(name)s %(module)s - "
         "%(funcName)-20s %(message)s",
     }
@@ -83,16 +85,80 @@ class TestQSLogger(TestCase):
 
         qs_logger.get_settings = self.get_settings
 
-    def test_get_settings(self):
-        """Test suite for get_settings method."""
+    @mock.patch.dict("cloudshell.logging.qs_logger.os.environ", {"LOG_LEVEL": "DEBUG"})
+    def test_get_settings_priority_env_default_level(self):
+        """Test suite for get_settings method.
+
+        Priority set to ENV but LOG_LEVEL variable does't exist
+        """
         exp_response = {
             "WINDOWS_LOG_PATH": r"{ALLUSERSPROFILE}\QualiSystems\logs",
             "UNIX_LOG_PATH": "/var/log/qualisystems",
             "DEFAULT_LOG_PATH": "../../Logs",
             "TIME_FORMAT": "%d-%b-%Y--%H-%M-%S",
-            "LOG_LEVEL": "INFO",
+            "LOG_LEVEL": qs_logger.DEFAULT_LEVEL,
+            "LOG_PRIORITY": "ENV",
             "LOG_FORMAT": "%(asctime)s [%(levelname)s]: %(name)s %(module)s - "
             "%(funcName)-20s %(message)s",
+        }
+        names_to_remove = ["LOG_LEVEL"]
+        modified_environ = {k: v for k, v in os.environ.items() if k not in names_to_remove}
+        with mock.patch.dict(os.environ, modified_environ, clear=True):
+            self.assertEqual(qs_logger.get_settings(), exp_response)
+
+    def test_get_settings_priority_env(self):
+        """Test suite for get_settings method.
+
+        Priority set to ENV and LOG_LEVEL variable exists
+        """
+        exp_response = {
+            "WINDOWS_LOG_PATH": r"{ALLUSERSPROFILE}\QualiSystems\logs",
+            "UNIX_LOG_PATH": "/var/log/qualisystems",
+            "DEFAULT_LOG_PATH": "../../Logs",
+            "TIME_FORMAT": "%d-%b-%Y--%H-%M-%S",
+            "LOG_LEVEL": "DEBUG",
+            "LOG_PRIORITY": "ENV",
+            "LOG_FORMAT": "%(asctime)s [%(levelname)s]: %(name)s %(module)s - "
+            "%(funcName)-20s %(message)s",
+        }
+        with mock.patch.dict(os.environ, {"LOG_LEVEL": "DEBUG"}):
+            self.assertEqual(qs_logger.get_settings(), exp_response)
+
+    @mock.patch("cloudshell.logging.qs_logger.QSConfigParser")
+    def test_get_settings_default_log_level(self, parser_class):
+        """Test suite for get_settings method.
+
+        Wrong priority variable -> DEFAULT LOG LEVEL
+        """
+        parser = parser_class.return_value
+        parser.get_config.return_value = {"LOG_PRIORITY": "WRONG_PRIORITY"}
+
+        exp_response = {
+            "TIME_FORMAT": qs_logger.DEFAULT_TIME_FORMAT,
+            "LOG_LEVEL": qs_logger.DEFAULT_LEVEL,
+            "LOG_PRIORITY": "WRONG_PRIORITY",
+            "LOG_FORMAT": qs_logger.DEFAULT_FORMAT,
+        }
+
+        self.assertEqual(qs_logger.get_settings(), exp_response)
+
+    @mock.patch("cloudshell.logging.qs_logger.QSConfigParser")
+    def test_get_settings_log_level_from_config(self, parser_class):
+        """Test suite for get_settings method.
+
+        Get LOG_LEVEL from configuration file
+        """
+        parser = parser_class.return_value
+        parser.get_config.return_value = {
+            "LOG_PRIORITY": "CONFIG",
+            "LOG_LEVEL": "CRITICAL"
+        }
+
+        exp_response = {
+            "TIME_FORMAT": qs_logger.DEFAULT_TIME_FORMAT,
+            "LOG_LEVEL": "CRITICAL",
+            "LOG_PRIORITY": "CONFIG",
+            "LOG_FORMAT": qs_logger.DEFAULT_FORMAT,
         }
 
         self.assertEqual(qs_logger.get_settings(), exp_response)
