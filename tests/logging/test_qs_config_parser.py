@@ -19,7 +19,8 @@ class TestQSConfigParser(TestCase):
             "DEFAULT_LOG_PATH": "../../Logs",
             "LOG_FORMAT": "%(asctime)s [%(levelname)s]: %(name)s "
             "%(module)s - %(funcName)-20s %(message)s",
-            "LOG_LEVEL": "INFO",
+            "LOG_LEVEL": "ERROR",
+            "LOG_PRIORITY": "ENV",
         }
     }
 
