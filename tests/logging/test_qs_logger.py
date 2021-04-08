@@ -288,6 +288,11 @@ class TestQSLogger(TestCase):
             sorted(["Ungrouped", "test1", "test2"]),
         )
 
+    def test_get_qs_logger_log_level_incorrect(self):
+        os.environ["LOG_LEVEL"] = "INCORRECT"
+        logger = qs_logger.get_qs_logger()
+        self.assertEqual(logger.level, getattr(logging, qs_logger.DEFAULT_LEVEL))
+
     def test_normalize_buffer_decolorize(self):
         """Test suite for normalize_buffer method."""
         self.assertEqual(
