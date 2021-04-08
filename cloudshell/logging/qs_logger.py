@@ -68,6 +68,14 @@ def get_settings():
     return config
 
 
+def _set_log_level(logger, config):
+    try:
+        logger.setLevel(config["LOG_LEVEL"])
+    except ValueError as err:
+        logger.setLevel(DEFAULT_LEVEL)
+        logger.warning(err)
+
+
 def _get_log_path_config(config):
     """Get log path based on the environment variable or Windows/Unix config setting.
 
@@ -185,11 +193,7 @@ def get_qs_logger(log_group="Ungrouped", log_category="QS", log_file_prefix="QS"
     try:
         if log_group in _LOGGER_CONTAINER:
             logger = _LOGGER_CONTAINER[log_group]
-            try:
-                logger.setLevel(config["LOG_LEVEL"])
-            except ValueError as err:
-                logger.setLevel(DEFAULT_LEVEL)
-                logger.warning(err)
+            _set_log_level(logger, config)
         else:
             logger = _create_logger(
                 log_group, log_category, log_file_prefix, config=config
@@ -229,11 +233,7 @@ def _create_logger(log_group, log_category, log_file_prefix, config=None):
     config = config or get_settings()
 
     logger = QSLogger(name=log_category)
-    try:
-        logger.setLevel(config["LOG_LEVEL"])
-    except ValueError as err:
-        logger.setLevel(DEFAULT_LEVEL)
-        logger.warning(err)
+    _set_log_level(logger, config)
 
     formatter = MultiLineFormatter(config["LOG_FORMAT"])
     log_path = get_accessible_log_path(log_group, log_file_prefix)
