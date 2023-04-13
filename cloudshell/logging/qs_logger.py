@@ -265,6 +265,9 @@ def _add_handler_with_context(logger, config, file_prefix, folder_name) -> None:
 
 def _add_handler_without_context(logger, config) -> None:
     log_path = _get_log_path_config(config)
+    if not log_path:
+        return  # we save missed logs only for file handlers
+
     missing_logs_name = "missed_logs.log"
     missing_logs_path = os.path.join(log_path, missing_logs_name)
 
@@ -282,8 +285,8 @@ def _add_handler_without_context(logger, config) -> None:
         )
         formatter = MultiLineFormatter(config["LOG_FORMAT"])
         hdlr.setFormatter(formatter)
-        filter = FilterOnlyWithoutContext(logger.name)
-        hdlr.addFilter(filter)
+        filter_ = FilterOnlyWithoutContext(logger.name)
+        hdlr.addFilter(filter_)
         logger.addHandler(hdlr)
 
 
