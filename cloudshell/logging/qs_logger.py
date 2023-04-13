@@ -18,6 +18,7 @@ from cloudshell.logging.context_filters import (
     set_logger_context,
 )
 from cloudshell.logging.qs_config_parser import QSConfigParser
+from cloudshell.logging.utils.venv import get_venv_name
 
 # Logging Levels
 LOG_LEVELS = {
@@ -138,10 +139,7 @@ def get_accessible_log_path(reservation_id="Autoload", handler="default"):
     log_path = _get_log_path_config(config)
 
     if log_path:
-        env_folder = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", ".."
-        )
-        shell_name = os.path.basename(os.path.abspath(env_folder))
+        shell_name = get_venv_name()
         log_path = os.path.join(log_path, reservation_id, shell_name)
         path = _prepare_log_path(log_path=log_path, log_file_name=log_file_name)
         if path:
