@@ -1,14 +1,9 @@
-import sys
 from unittest import TestCase
+from unittest.mock import MagicMock, Mock
 
 from cloudshell.logging.utils.error_handling_context_manager import (
     ErrorHandlingContextManager,
 )
-
-if sys.version_info >= (3, 0):
-    from unittest.mock import MagicMock, Mock
-else:
-    from mock import MagicMock, Mock
 
 
 class TestErrorHandlingContextManager(TestCase):
@@ -33,7 +28,7 @@ class TestErrorHandlingContextManager(TestCase):
 
         # Act
         with ErrorHandlingContextManager(logger=logger):
-            print("hello world")  # noqa: T001
+            print("hello world")  # noqa: T201
 
         # Assert
         logger.error.assert_not_called()
