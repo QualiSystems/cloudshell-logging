@@ -21,7 +21,7 @@ def command_logging(func):
         if not logger:
             raise Exception("Logger instance is not defined.")
 
-        logger.debug('Start command "{}"'.format(func_name))
+        logger.debug(f'Start command "{func_name}"')
         finishing_msg = 'Command "{}" finished {}'
         try:
 

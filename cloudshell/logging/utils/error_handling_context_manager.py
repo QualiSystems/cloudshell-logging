@@ -1,7 +1,7 @@
 import traceback
 
 
-class ErrorHandlingContextManager(object):
+class ErrorHandlingContextManager:
     def __init__(self, logger):
         """Initializes an instance of ErrorHandlingContext.
 

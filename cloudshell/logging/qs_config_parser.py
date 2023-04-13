@@ -1,15 +1,8 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
-
+import configparser as ConfigParser
 import os
-import sys
 
 DEFAULT_CONFIG_PATH = "qs_config.ini"
-
-if sys.version_info >= (3, 0):
-    import configparser as ConfigParser
-else:
-    import ConfigParser
 
 
 class QSConfigParser:
@@ -19,7 +12,6 @@ class QSConfigParser:
         self._config_parser = ConfigParser.RawConfigParser()
 
     def _get_full_config(self):
-        """  """
         config_file = os.getenv(
             "QS_CONFIG", os.path.join(os.path.dirname(__file__), DEFAULT_CONFIG_PATH)
         )

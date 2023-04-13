@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Tests for cloudshell.logging.qs_config_parser."""
 
 import os
