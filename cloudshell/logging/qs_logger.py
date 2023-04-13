@@ -1,4 +1,6 @@
 #!/usr/bin/python
+from __future__ import annotations
+
 import logging
 import os
 import re
@@ -8,7 +10,13 @@ import time
 import traceback
 from datetime import datetime
 from functools import wraps
+from logging.handlers import RotatingFileHandler
 
+from cloudshell.logging.context_filters import (
+    FilterByContext,
+    FilterOnlyWithoutContext,
+    set_logger_context,
+)
 from cloudshell.logging.interprocess_logger import MultiProcessingLog
 from cloudshell.logging.qs_config_parser import QSConfigParser
 
@@ -25,7 +33,8 @@ LOG_LEVELS = {
 
 # default settings
 DEFAULT_FORMAT = (
-    "%(asctime)s [%(levelname)s]: %(name)s %(module)s - %(funcName)-20s %(message)s"
+    "%(asctime)s [%(levelname)s]: "
+    "%(threadName)s %(module)s - %(funcName)-20s %(message)s"
 )
 DEFAULT_TIME_FORMAT = "%Y%m%d%H%M%S"
 DEFAULT_LEVEL = "INFO"
@@ -35,14 +44,6 @@ WINDOWS_OS_FAMILY = "nt"
 
 _LOGGER_CONTAINER = {}
 _LOGGER_LOCK = threading.Lock()
-
-
-# TODO: Need to be re-written
-class QSLogger(logging.Logger):
-    def setLevel(self, level):
-        super().setLevel(level)
-        if hasattr(self, "_cache"):
-            self._cache.clear()
 
 
 def get_settings():
@@ -156,17 +157,18 @@ def get_accessible_log_path(reservation_id="Autoload", handler="default"):
 
 def log_execution_info(logger_hdlr, exec_info):
     """Log provided execution information into provided logger on 'INFO' level."""
-    if not hasattr(logger_hdlr, "info_logged"):
-        logger_hdlr.info_logged = True
-        logger_hdlr.info("--------------- Execution Info: ---------------------------")
-        for key, val in exec_info.items():
-            logger_hdlr.info(f"{key.ljust(20)}: {val}")
-        logger_hdlr.info(
-            "-----------------------------------------------------------\n"
-        )
+    logger_hdlr.info("--------------- Execution Info: ---------------------------")
+    for key, val in exec_info.items():
+        logger_hdlr.info(f"{key.ljust(20)}: {val}")
+    logger_hdlr.info("-----------------------------------------------------------\n")
 
 
-def get_qs_logger(log_group="Ungrouped", log_category="QS", log_file_prefix="QS"):
+def get_qs_logger(
+    log_group="Ungrouped",
+    log_category="cloudshell",
+    log_file_prefix="QS",
+    exec_info: dict | None = None,
+) -> logging.Logger:
     """Create cloudshell specific singleton logger.
 
     :param log_group: This folder will be grouped under this name.
@@ -188,6 +190,8 @@ def get_qs_logger(log_group="Ungrouped", log_category="QS", log_file_prefix="QS"
     :return: the logger object
     :rtype: logging.Logger
     """
+    exec_info = exec_info or {}
+    set_logger_context(folder_name=log_group, file_prefix=log_file_prefix)
     config = get_settings()
     _LOGGER_LOCK.acquire()
     try:
@@ -199,6 +203,7 @@ def get_qs_logger(log_group="Ungrouped", log_category="QS", log_file_prefix="QS"
                 log_group, log_category, log_file_prefix, config=config
             )
             _LOGGER_CONTAINER[log_group] = logger
+            log_execution_info(logger, exec_info)
     finally:
         _LOGGER_LOCK.release()
 
@@ -227,26 +232,59 @@ def _create_logger(log_group, log_category, log_file_prefix, config=None):
     :return: the logger object
     :rtype: logging.Logger
     """
-    log_file_prefix = re.sub(" ", "_", log_file_prefix)
-    log_category = f"{log_category}.{log_file_prefix}"
-
     config = config or get_settings()
-
-    logger = QSLogger(name=log_category)
+    logger = logging.getLogger(log_category)
     _set_log_level(logger, config)
+    _add_handler_with_context(logger, config, log_file_prefix, log_group)
+    _add_handler_without_context(logger, config)
 
-    formatter = MultiLineFormatter(config["LOG_FORMAT"])
-    log_path = get_accessible_log_path(log_group, log_file_prefix)
+    return logger
 
+
+def _add_handler_with_context(logger, config, file_prefix, folder_name) -> None:
+    filter_by_context = FilterByContext(
+        logger.name,
+        folder_name=folder_name,
+        file_prefix=file_prefix,  # use original file prefix
+    )
+    log_file_prefix = re.sub(" ", "_", file_prefix)
+
+    log_path = get_accessible_log_path(folder_name, log_file_prefix)
     if log_path:
         hdlr = MultiProcessingLog(log_path, mode="a")
     else:
         hdlr = logging.StreamHandler(sys.stdout)
 
+    hdlr.addFilter(filter_by_context)
+
+    formatter = MultiLineFormatter(config["LOG_FORMAT"])
     hdlr.setFormatter(formatter)
+
     logger.addHandler(hdlr)
 
-    return logger
+
+def _add_handler_without_context(logger, config) -> None:
+    log_path = _get_log_path_config(config)
+    missing_logs_name = "missed_logs.log"
+    missing_logs_path = os.path.join(log_path, missing_logs_name)
+
+    for h in logger.handlers:
+        if isinstance(h, RotatingFileHandler):
+            if h.baseFilename.endswith(missing_logs_name):
+                break
+    else:
+        hdlr = RotatingFileHandler(
+            missing_logs_path,
+            mode="a",
+            delay=True,
+            maxBytes=10 * 1024 * 1024,
+            backupCount=2,
+        )
+        formatter = MultiLineFormatter(config["LOG_FORMAT"])
+        hdlr.setFormatter(formatter)
+        filter = FilterOnlyWithoutContext(logger.name)
+        hdlr.addFilter(filter)
+        logger.addHandler(hdlr)
 
 
 def qs_time_this(func):
