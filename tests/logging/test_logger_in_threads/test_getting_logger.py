@@ -18,11 +18,9 @@ from cloudshell.logging.context_filters import (
     set_logger_context_from_parent,
 )
 from cloudshell.logging.qs_logger import _LOGGER_CONTAINER, get_qs_logger
+from cloudshell.logging.utils.venv import get_venv_name
 
-env_path = os.path.join(  # 🤦🏻‍ fixme
-    os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", ".."
-)
-env_name = Path(env_path).resolve().name
+env_name = get_venv_name()
 
 
 @pytest.fixture(autouse=True)
