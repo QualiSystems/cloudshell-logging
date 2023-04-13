@@ -256,12 +256,11 @@ class TestQSLogger(TestCase):
         if "LOG_PATH" in os.environ:
             del os.environ["LOG_PATH"]
         qs_logger.get_settings = cut_settings
-        self.assertTrue(
-            isinstance(
-                qs_logger.get_qs_logger(log_group="stream").handlers[0],
-                logging.StreamHandler,
-            )
-        )
+
+        logger = qs_logger.get_qs_logger(log_group="stream")
+        # the logger has several handlers cause of previous tests
+        # but log records would be filtered by context
+        assert isinstance(logger.handlers[-1], logging.StreamHandler)
 
     def test_get_qs_logger_container_filling(self):
         """Test suite for get_qs_logger method."""
