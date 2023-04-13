@@ -1,23 +1,14 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 """Tests for cloudshell.logging.qs_logger."""
 
 import logging
 import os
 import shutil
-import sys
+from unittest import TestCase, mock
+from unittest.mock import MagicMock
 
 from cloudshell.logging import qs_logger
 from cloudshell.logging.interprocess_logger import MultiProcessingLog
-
-if sys.version_info >= (3, 0):
-    from unittest.mock import MagicMock
-    from unittest import TestCase, mock
-else:
-    from mock import MagicMock
-    import mock
-    from unittest import TestCase
-
 
 CUR_DIR = os.path.dirname(__file__)
 full_settings = MagicMock(
@@ -208,7 +199,7 @@ class TestQSLogger(TestCase):
     def test_get_accessible_log_path_default_params(self):
         """Test suite for get_accessible_log_path method."""
         path = qs_logger.get_accessible_log_path()
-        self.assertRegexpMatches(
+        self.assertRegex(
             path,
             r"Logs[\\/]Autoload[\\/](.*[\\/])?default--\d{2}-\w+-"
             r"\d{4}--\d{2}-\d{2}-\d{2}\.log",
@@ -223,7 +214,7 @@ class TestQSLogger(TestCase):
     def test_get_accessible_log_path(self):
         """Test suite for get_accessible_log_path method."""
         path = qs_logger.get_accessible_log_path("reservation_id", "handler_name")
-        self.assertRegexpMatches(
+        self.assertRegex(
             path,
             r"Logs[\\/]reservation_id[\\/](.*[\\/])?"
             r"handler_name--\d{2}-\w+-\d{4}--\d{2}-\d{2}-\d{2}\.log",

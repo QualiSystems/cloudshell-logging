@@ -40,7 +40,7 @@ _LOGGER_LOCK = threading.Lock()
 # TODO: Need to be re-written
 class QSLogger(logging.Logger):
     def setLevel(self, level):
-        super(QSLogger, self).setLevel(level)
+        super().setLevel(level)
         if hasattr(self, "_cache"):
             self._cache.clear()
 
@@ -91,8 +91,8 @@ def _get_log_path_config(config):
             try:
                 return tpl.format(**os.environ)
             except KeyError:
-                print(  # noqa: T001
-                    "Environment variable is not defined in the template {}".format(tpl)
+                print(  # noqa: T201
+                    f"Environment variable is not defined in the template {tpl}"
                 )
     else:
         return config.get("UNIX_LOG_PATH")
@@ -133,7 +133,7 @@ def get_accessible_log_path(reservation_id="Autoload", handler="default"):
     """
     config = get_settings()
     time_format = config["TIME_FORMAT"] or DEFAULT_TIME_FORMAT
-    log_file_name = "{0}--{1}.log".format(handler, datetime.now().strftime(time_format))
+    log_file_name = f"{handler}--{datetime.now().strftime(time_format)}.log"
 
     log_path = _get_log_path_config(config)
 
@@ -160,7 +160,7 @@ def log_execution_info(logger_hdlr, exec_info):
         logger_hdlr.info_logged = True
         logger_hdlr.info("--------------- Execution Info: ---------------------------")
         for key, val in exec_info.items():
-            logger_hdlr.info("{0}: {1}".format(key.ljust(20), val))
+            logger_hdlr.info(f"{key.ljust(20)}: {val}")
         logger_hdlr.info(
             "-----------------------------------------------------------\n"
         )
@@ -228,7 +228,7 @@ def _create_logger(log_group, log_category, log_file_prefix, config=None):
     :rtype: logging.Logger
     """
     log_file_prefix = re.sub(" ", "_", log_file_prefix)
-    log_category = "%s.%s" % (log_category, log_file_prefix)
+    log_category = f"{log_category}.{log_file_prefix}"
 
     config = config or get_settings()
 
@@ -259,7 +259,7 @@ def qs_time_this(func):
         _logger.info("%s started" % func.__name__)
         result = func(*args, **kwargs)
         end = time.time()
-        _logger.info("%s ended taking %s" % (func.__name__, str(end - start)))
+        _logger.info(f"{func.__name__} ended taking {str(end - start)}")
         return result
 
     return wrapper
@@ -329,13 +329,13 @@ class MultiLineFormatter(logging.Formatter):
             header, footer = s.rsplit(record.message, self.MAX_SPLIT)
             s = s.replace("\n", "\n" + header)
         except Exception as e:
-            print(traceback.format_exc())  # noqa: T001
-            print("logger.format: Unexpected error: " + str(e))  # noqa: T001
-            print("record = {}<<<".format(traceback.format_exc()))  # noqa: T001
+            print(traceback.format_exc())  # noqa: T201
+            print("logger.format: Unexpected error: " + str(e))  # noqa: T201
+            print(f"record = {traceback.format_exc()}<<<")  # noqa: T201
         return s
 
 
-class Loggable(object):
+class Loggable:
     """Interface for Instances which uses Logging."""
 
     LOG_LEVEL = LOG_LEVELS["WARN"]  # Default Level that will be reported
