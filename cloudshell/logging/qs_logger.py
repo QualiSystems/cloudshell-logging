@@ -17,7 +17,6 @@ from cloudshell.logging.context_filters import (
     FilterOnlyWithoutContext,
     set_logger_context,
 )
-from cloudshell.logging.interprocess_logger import MultiProcessingLog
 from cloudshell.logging.qs_config_parser import QSConfigParser
 
 # Logging Levels
@@ -251,7 +250,7 @@ def _add_handler_with_context(logger, config, file_prefix, folder_name) -> None:
 
     log_path = get_accessible_log_path(folder_name, log_file_prefix)
     if log_path:
-        hdlr = MultiProcessingLog(log_path, mode="a")
+        hdlr = logging.FileHandler(log_path, mode="a")
     else:
         hdlr = logging.StreamHandler(sys.stdout)
 
