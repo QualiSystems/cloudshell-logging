@@ -4,11 +4,11 @@
 import logging
 import os
 import shutil
+from logging import FileHandler
 from unittest import TestCase, mock
 from unittest.mock import MagicMock
 
 from cloudshell.logging import qs_logger
-from cloudshell.logging.interprocess_logger import MultiProcessingLog
 
 CUR_DIR = os.path.dirname(__file__)
 full_settings = MagicMock(
@@ -73,6 +73,9 @@ class TestQSLogger(TestCase):
         for logger in qs_logger._LOGGER_CONTAINER.values():
             for handler in logger.handlers:
                 handler.close()
+            logger.handlers.clear()
+
+        qs_logger._LOGGER_CONTAINER.clear()
 
         qs_logger.get_settings = self.get_settings
 
@@ -237,19 +240,12 @@ class TestQSLogger(TestCase):
     def test_get_qs_logger_full_settings_default_params(self):
         """Test suite for get_qs_logger method."""
         qs_logger.get_settings = full_settings
-        self.assertTrue(
-            isinstance(qs_logger.get_qs_logger().handlers[0], MultiProcessingLog)
-        )
+        assert isinstance(qs_logger.get_qs_logger().handlers[0], FileHandler)
 
     def test_get_qs_logger_full_settings(self):
         """Test suite for get_qs_logger method."""
         qs_logger.get_settings = full_settings
-        self.assertTrue(
-            isinstance(
-                qs_logger.get_qs_logger(log_group="test1").handlers[0],
-                MultiProcessingLog,
-            )
-        )
+        assert isinstance(qs_logger.get_qs_logger("test1").handlers[0], FileHandler)
 
     def test_get_qs_logger_stream_handler(self):
         """Test suite for get_qs_logger method."""
