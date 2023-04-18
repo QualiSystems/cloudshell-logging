@@ -66,3 +66,4 @@ target/
 .pydevproject
 .DS_Store
 .idea/
+.pytest_cache/
