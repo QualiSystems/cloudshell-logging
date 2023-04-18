@@ -5,6 +5,7 @@ import logging
 import os
 import shutil
 from logging import FileHandler
+from logging.handlers import MemoryHandler
 from unittest import TestCase, mock
 from unittest.mock import MagicMock
 
@@ -69,6 +70,8 @@ class TestQSLogger(TestCase):
             os.putenv("LOG_PATH", self.log_path)
         elif "LOG_PATH" in os.environ:
             del os.environ["LOG_PATH"]
+        if "LOG_LEVEL" in os.environ:
+            del os.environ["LOG_LEVEL"]
 
         for logger in qs_logger._LOGGER_CONTAINER.values():
             for handler in logger.handlers:
@@ -277,7 +280,12 @@ class TestQSLogger(TestCase):
     def test_get_qs_logger_log_level_incorrect(self):
         os.environ["LOG_LEVEL"] = "INCORRECT"
         logger = qs_logger.get_qs_logger()
-        self.assertEqual(logger.level, getattr(logging, qs_logger.DEFAULT_LEVEL))
+        assert logger.level == logging.DEBUG
+        for hdrl in logger.handlers:
+            if isinstance(hdrl, MemoryHandler):
+                assert hdrl.level == logging.NOTSET
+            else:
+                assert hdrl.level == getattr(logging, qs_logger.DEFAULT_LEVEL)
 
     def test_normalize_buffer_decolorize(self):
         """Test suite for normalize_buffer method."""
