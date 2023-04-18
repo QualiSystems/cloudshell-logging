@@ -11,6 +11,7 @@ import traceback
 from datetime import datetime
 from functools import wraps
 from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 from cloudshell.logging.context_filters import (
     FilterByContext,
@@ -18,6 +19,7 @@ from cloudshell.logging.context_filters import (
     set_logger_context,
 )
 from cloudshell.logging.qs_config_parser import QSConfigParser
+from cloudshell.logging.utils.patch_logging_shutdown import patch_logging_shutdown
 from cloudshell.logging.utils.venv import get_venv_name
 
 # Logging Levels
@@ -70,11 +72,14 @@ def get_settings():
 
 
 def _set_log_level(logger, config):
-    try:
-        logger.setLevel(config["LOG_LEVEL"])
-    except ValueError as err:
-        logger.setLevel(DEFAULT_LEVEL)
-        logger.warning(err)
+    log_level = config.get("LOG_LEVEL", DEFAULT_LEVEL)
+
+    for handler in logger.handlers:
+        if not isinstance(handler, logging.handlers.MemoryHandler):
+            try:
+                handler.setLevel(log_level)
+            except ValueError:
+                handler.setLevel(DEFAULT_LEVEL)
 
 
 def _get_log_path_config(config):
@@ -194,13 +199,13 @@ def get_qs_logger(
     try:
         if log_group in _LOGGER_CONTAINER:
             logger = _LOGGER_CONTAINER[log_group]
-            _set_log_level(logger, config)
         else:
             logger = _create_logger(
                 log_group, log_category, log_file_prefix, config=config
             )
             _LOGGER_CONTAINER[log_group] = logger
             log_execution_info(logger, exec_info)
+        _set_log_level(logger, config)
     finally:
         _LOGGER_LOCK.release()
 
@@ -231,7 +236,7 @@ def _create_logger(log_group, log_category, log_file_prefix, config=None):
     """
     config = config or get_settings()
     logger = logging.getLogger(log_category)
-    _set_log_level(logger, config)
+    logger.setLevel(logging.DEBUG)
     _add_handler_with_context(logger, config, log_file_prefix, log_group)
     _add_handler_without_context(logger, config)
 
@@ -248,16 +253,33 @@ def _add_handler_with_context(logger, config, file_prefix, folder_name) -> None:
 
     log_path = get_accessible_log_path(folder_name, log_file_prefix)
     if log_path:
-        hdlr = logging.FileHandler(log_path, mode="a")
+        hdlr1 = logging.FileHandler(log_path, mode="a")
+        hdlr2 = _add_memory_handler(log_path)
+        hdlrs = (hdlr1, hdlr2)
     else:
-        hdlr = logging.StreamHandler(sys.stdout)
+        hdlrs = (logging.StreamHandler(sys.stdout),)
 
-    hdlr.addFilter(filter_by_context)
+    for hdlr in hdlrs:
+        hdlr.addFilter(filter_by_context)
 
-    formatter = MultiLineFormatter(config["LOG_FORMAT"])
-    hdlr.setFormatter(formatter)
+        formatter = MultiLineFormatter(config["LOG_FORMAT"])
+        hdlr.setFormatter(formatter)
 
-    logger.addHandler(hdlr)
+        logger.addHandler(hdlr)
+
+
+def _add_memory_handler(log_path: str):
+    log_path = Path(log_path)
+    folder_path = log_path.parent
+    file_name = log_path.name.rstrip(".log") + "-debug.log"
+    debug_log_path = folder_path / file_name
+
+    target_hdlr = logging.FileHandler(debug_log_path, mode="a", delay=True)
+    memory_hdlr = logging.handlers.MemoryHandler(
+        capacity=100000, target=target_hdlr, flushOnClose=False
+    )
+    patch_logging_shutdown()
+    return memory_hdlr
 
 
 def _add_handler_without_context(logger, config) -> None:
