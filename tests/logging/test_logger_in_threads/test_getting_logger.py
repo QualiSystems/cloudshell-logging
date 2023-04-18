@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 import os
 import re
 import tempfile
@@ -17,18 +16,10 @@ from cloudshell.logging.context_filters import (
     pass_log_context,
     set_logger_context_from_parent,
 )
-from cloudshell.logging.qs_logger import _LOGGER_CONTAINER, get_qs_logger
+from cloudshell.logging.qs_logger import get_qs_logger
 from cloudshell.logging.utils.venv import get_venv_name
 
 env_name = get_venv_name()
-
-
-@pytest.fixture(autouse=True)
-def clear_loggers():
-    yield
-    _LOGGER_CONTAINER.clear()
-    logger = logging.getLogger("tests")
-    logger.handlers.clear()
 
 
 def command(folder_name: str, file_prefix: str) -> None:
