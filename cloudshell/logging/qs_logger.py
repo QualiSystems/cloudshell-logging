@@ -68,6 +68,9 @@ def get_settings():
         config.get("LOG_FORMAT") or config.get("FORMAT") or DEFAULT_FORMAT
     )
     config["TIME_FORMAT"] = config.get("TIME_FORMAT") or DEFAULT_TIME_FORMAT
+    config["MEMORY_LOG_SIZE"] = int(
+        os.getenv("QS_MEMORY_LOG_SIZE", config.get("MEMORY_LOG_SIZE", 500))
+    )
 
     return config
 
@@ -255,7 +258,7 @@ def _add_handler_with_context(logger, config, file_prefix, folder_name) -> None:
     log_path = get_accessible_log_path(folder_name, log_file_prefix)
     if log_path:
         hdlr1 = logging.FileHandler(log_path, mode="a")
-        hdlr2 = _add_memory_handler(log_path)
+        hdlr2 = _add_memory_handler(log_path, config)
         hdlrs = (hdlr1, hdlr2)
     else:
         hdlrs = (logging.StreamHandler(sys.stdout),)
@@ -269,14 +272,14 @@ def _add_handler_with_context(logger, config, file_prefix, folder_name) -> None:
         logger.addHandler(hdlr)
 
 
-def _add_memory_handler(log_path: str):
+def _add_memory_handler(log_path: str, config):
     log_path = Path(log_path)
     folder_path = log_path.parent
     file_name = log_path.name.rstrip(".log") + "-debug.log"
     debug_log_path = folder_path / file_name
 
     target_hdlr = logging.FileHandler(debug_log_path, mode="a", delay=True)
-    memory_hdlr = LimitedMemoryHandler(1000, target_hdlr)
+    memory_hdlr = LimitedMemoryHandler(config["MEMORY_LOG_SIZE"], target_hdlr)
     patch_logging_shutdown()
     return memory_hdlr
 
