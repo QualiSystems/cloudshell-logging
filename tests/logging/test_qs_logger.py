@@ -5,11 +5,11 @@ import logging
 import os
 import shutil
 from logging import FileHandler
-from logging.handlers import MemoryHandler
 from unittest import TestCase, mock
 from unittest.mock import MagicMock
 
 from cloudshell.logging import qs_logger
+from cloudshell.logging.memory_handler import LimitedMemoryHandler
 
 CUR_DIR = os.path.dirname(__file__)
 full_settings = MagicMock(
@@ -282,7 +282,7 @@ class TestQSLogger(TestCase):
         logger = qs_logger.get_qs_logger()
         assert logger.level == logging.DEBUG
         for hdrl in logger.handlers:
-            if isinstance(hdrl, MemoryHandler):
+            if isinstance(hdrl, LimitedMemoryHandler):
                 assert hdrl.level == logging.NOTSET
             else:
                 assert hdrl.level == getattr(logging, qs_logger.DEFAULT_LEVEL)
