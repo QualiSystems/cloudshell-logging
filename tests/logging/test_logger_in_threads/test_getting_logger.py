@@ -123,6 +123,10 @@ def test_getting_logger(command_to_execute):
             ]
             wait(futures)
 
+        logger = logging.getLogger("tests")
+        for h in logger.handlers:
+            if getattr(h, "flushOnClose", True):
+                h.flush()
         # file name would be changed, but we use original in context vars
         updated_file_prefix = file_prefix.replace(" ", "_")
         for rid in reservation_ids:
@@ -141,7 +145,6 @@ def test_getting_logger(command_to_execute):
 def test_log_records_without_context():
     folder_name = "1"
     file_prefix = "resource_name"
-    logger = logging.getLogger("tests")
 
     with tempfile.TemporaryDirectory() as temp_dir:
         os.environ["LOG_PATH"] = temp_dir
@@ -153,6 +156,11 @@ def test_log_records_without_context():
                 )
             ]
             wait(futures)
+
+        logger = logging.getLogger("tests")
+        for h in logger.handlers:
+            if getattr(h, "flushOnClose", True):
+                h.flush()
 
         # standard logs don't have our log records
         folder_path = Path(temp_dir) / folder_name / env_name
