@@ -18,6 +18,7 @@ from cloudshell.logging.context_filters import (
     FilterOnlyWithoutContext,
     set_logger_context,
 )
+from cloudshell.logging.memory_handler import LimitedMemoryHandler
 from cloudshell.logging.qs_config_parser import QSConfigParser
 from cloudshell.logging.utils.patch_logging_shutdown import patch_logging_shutdown
 from cloudshell.logging.utils.venv import get_venv_name
@@ -75,7 +76,7 @@ def _set_log_level(logger, config):
     log_level = config.get("LOG_LEVEL", DEFAULT_LEVEL)
 
     for handler in logger.handlers:
-        if not isinstance(handler, logging.handlers.MemoryHandler):
+        if not isinstance(handler, LimitedMemoryHandler):
             try:
                 handler.setLevel(log_level)
             except ValueError:
@@ -275,9 +276,7 @@ def _add_memory_handler(log_path: str):
     debug_log_path = folder_path / file_name
 
     target_hdlr = logging.FileHandler(debug_log_path, mode="a", delay=True)
-    memory_hdlr = logging.handlers.MemoryHandler(
-        capacity=100000, target=target_hdlr, flushOnClose=False
-    )
+    memory_hdlr = LimitedMemoryHandler(1000, target_hdlr)
     patch_logging_shutdown()
     return memory_hdlr
 
