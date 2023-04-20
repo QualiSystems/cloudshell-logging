@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import logging
 import os
 import re
 import tempfile
 import threading
 from concurrent.futures import ThreadPoolExecutor, wait
 from contextvars import copy_context
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 import pytest
@@ -63,8 +65,12 @@ def command_with_simple_thread_passed_context(
 
     def wrapper():
         parent_context = copy_context()
-        set_logger_context_from_parent(parent_context)
-        do_smth(folder_name)
+
+        def wrapped(*args, **kwargs):
+            set_logger_context_from_parent(parent_context)
+            do_smth(*args, **kwargs)
+
+        return wrapped
 
     t = threading.Thread(target=wrapper(), args=(folder_name,))
     t.start()
@@ -135,6 +141,7 @@ def test_getting_logger(command_to_execute):
 def test_log_records_without_context():
     folder_name = "1"
     file_prefix = "resource_name"
+    logger = logging.getLogger("tests")
 
     with tempfile.TemporaryDirectory() as temp_dir:
         os.environ["LOG_PATH"] = temp_dir
@@ -156,6 +163,13 @@ def test_log_records_without_context():
 
         # but missed logs have log records
         missed_logs_path = Path(temp_dir) / "missed_logs.log"
+        for h in logger.handlers:
+            if isinstance(h, RotatingFileHandler):
+                assert h.baseFilename == str(missed_logs_path)
+                break
+        else:
+            assert False, "FileHandler not found"
+
         assert missed_logs_path.exists()
         log_records = missed_logs_path.read_text()
         assert len(re.findall(r"do smth with", log_records)) == 1
