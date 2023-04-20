@@ -20,6 +20,7 @@ full_settings = MagicMock(
         "LOG_PRIORITY": "ENV",
         "LOG_FORMAT": "%(asctime)s [%(levelname)s]: %(name)s %(module)s - "
         "%(funcName)-20s %(message)s",
+        "MEMORY_LOG_SIZE": 500,
     }
 )
 
@@ -97,6 +98,7 @@ class TestQSLogger(TestCase):
             "LOG_PRIORITY": "ENV",
             "LOG_FORMAT": "%(asctime)s [%(levelname)s]: %(name)s %(module)s - "
             "%(funcName)-20s %(message)s",
+            "MEMORY_LOG_SIZE": 500,
         }
         names_to_remove = ["LOG_LEVEL"]
         modified_environ = {
@@ -119,6 +121,7 @@ class TestQSLogger(TestCase):
             "LOG_PRIORITY": "ENV",
             "LOG_FORMAT": "%(asctime)s [%(levelname)s]: %(name)s %(module)s - "
             "%(funcName)-20s %(message)s",
+            "MEMORY_LOG_SIZE": 500,
         }
         with mock.patch.dict(os.environ, {"LOG_LEVEL": "DEBUG"}):
             self.assertEqual(qs_logger.get_settings(), exp_response)
@@ -137,6 +140,7 @@ class TestQSLogger(TestCase):
             "LOG_LEVEL": qs_logger.DEFAULT_LEVEL,
             "LOG_PRIORITY": "WRONG_PRIORITY",
             "LOG_FORMAT": qs_logger.DEFAULT_FORMAT,
+            "MEMORY_LOG_SIZE": 500,
         }
 
         self.assertEqual(qs_logger.get_settings(), exp_response)
@@ -158,6 +162,7 @@ class TestQSLogger(TestCase):
             "LOG_LEVEL": "CRITICAL",
             "LOG_PRIORITY": "CONFIG",
             "LOG_FORMAT": qs_logger.DEFAULT_FORMAT,
+            "MEMORY_LOG_SIZE": 500,
         }
 
         self.assertEqual(qs_logger.get_settings(), exp_response)
