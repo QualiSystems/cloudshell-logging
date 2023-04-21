@@ -1,4 +1,3 @@
-#!/usr/bin/python
 """Tests for cloudshell.logging.qs_config_parser."""
 
 import os
