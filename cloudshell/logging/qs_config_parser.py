@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import configparser as ConfigParser
 import os
 
