@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import os
 import re
-import tempfile
-from pathlib import Path
 
 import pytest
 
@@ -15,56 +13,48 @@ from cloudshell.logging.utils.venv import get_venv_name
 venv_name = get_venv_name()
 
 
-def test_no_debug_logs():
+def test_no_debug_logs(tmp_path):
     rid = "reservation id"
     file_prefix = "resource_name"
+    os.environ["LOG_PATH"] = str(tmp_path)
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        os.environ["LOG_PATH"] = temp_dir
+    _ = get_qs_logger(log_category="tests", log_file_prefix=file_prefix, log_group=rid)
+    do_smth(rid, error=False)
 
-        _ = get_qs_logger(
-            log_category="tests", log_file_prefix=file_prefix, log_group=rid
-        )
-        do_smth(rid, error=False)
+    folder_path = tmp_path / rid / venv_name
+    file_paths = list(folder_path.glob(f"{file_prefix}*.log"))
+    assert len(file_paths) == 1
+    log_records = file_paths[0].read_text()
 
-        folder_path = Path(temp_dir) / rid / venv_name
-        file_paths = list(folder_path.glob(f"{file_prefix}*.log"))
-        assert len(file_paths) == 1
-        log_records = file_paths[0].read_text()
-
-        assert len(re.findall(r"do smth with", log_records)) == 1
-        assert f"info do smth with {rid}" in log_records
-        assert f"debug do smth with {rid}" not in log_records
+    assert len(re.findall(r"do smth with", log_records)) == 1
+    assert f"info do smth with {rid}" in log_records
+    assert f"debug do smth with {rid}" not in log_records
 
 
-def test_debug_logs_on_error():
+def test_debug_logs_on_error(tmp_path):
     rid = "reservation id"
     file_prefix = "resource_name"
+    os.environ["LOG_PATH"] = str(tmp_path)
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        os.environ["LOG_PATH"] = temp_dir
+    _ = get_qs_logger(log_category="tests", log_file_prefix=file_prefix, log_group=rid)
+    with pytest.raises(ZeroDivisionError):
+        do_smth(rid, error=True)
 
-        _ = get_qs_logger(
-            log_category="tests", log_file_prefix=file_prefix, log_group=rid
-        )
-        with pytest.raises(ZeroDivisionError):
-            do_smth(rid, error=True)
+    folder_path = tmp_path / rid / venv_name
+    file_paths = list(folder_path.glob(f"{file_prefix}*.log"))
+    assert len(file_paths) == 2
 
-        folder_path = Path(temp_dir) / rid / venv_name
-        file_paths = list(folder_path.glob(f"{file_prefix}*.log"))
-        assert len(file_paths) == 2
+    if "debug" in file_paths[0].name:
+        debug_log_path, info_log_path = file_paths
+    else:
+        info_log_path, debug_log_path = file_paths
 
-        if "debug" in file_paths[0].name:
-            debug_log_path, info_log_path = file_paths
-        else:
-            info_log_path, debug_log_path = file_paths
+    info_log_records = info_log_path.read_text()
+    assert len(re.findall(r"do smth with", info_log_records)) == 1
+    assert f"info do smth with {rid}" in info_log_records
+    assert f"debug do smth with {rid}" not in info_log_records
 
-        info_log_records = info_log_path.read_text()
-        assert len(re.findall(r"do smth with", info_log_records)) == 1
-        assert f"info do smth with {rid}" in info_log_records
-        assert f"debug do smth with {rid}" not in info_log_records
-
-        debug_log_records = debug_log_path.read_text()
-        assert len(re.findall(r"do smth with", debug_log_records)) == 2
-        assert f"info do smth with {rid}" in debug_log_records
-        assert f"debug do smth with {rid}" in debug_log_records
+    debug_log_records = debug_log_path.read_text()
+    assert len(re.findall(r"do smth with", debug_log_records)) == 2
+    assert f"info do smth with {rid}" in debug_log_records
+    assert f"debug do smth with {rid}" in debug_log_records
