@@ -3,12 +3,10 @@ from __future__ import annotations
 import logging
 import os
 import re
-import tempfile
 import threading
 from concurrent.futures import ThreadPoolExecutor, wait
 from contextvars import copy_context
 from logging.handlers import RotatingFileHandler
-from pathlib import Path
 
 import pytest
 
@@ -109,76 +107,70 @@ def command_with_own_thread_class_passed_context(
         command_with_own_thread_class_passed_context,
     ],
 )
-def test_getting_logger(command_to_execute):
+def test_getting_logger(command_to_execute, tmp_path):
     reservation_ids = list(map(str, range(10)))
     file_prefix = "resource name"
+    os.environ["LOG_PATH"] = str(tmp_path)
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        os.environ["LOG_PATH"] = temp_dir
+    with ThreadPoolExecutor() as executor:
+        futures = [
+            executor.submit(command_to_execute, rid, file_prefix)
+            for rid in reservation_ids
+        ]
+        wait(futures)
 
-        with ThreadPoolExecutor() as executor:
-            futures = [
-                executor.submit(command_to_execute, rid, file_prefix)
-                for rid in reservation_ids
-            ]
-            wait(futures)
+    logger = logging.getLogger("tests")
+    for h in logger.handlers:
+        if getattr(h, "flushOnClose", True):
+            h.flush()
+    # file name would be changed, but we use original in context vars
+    updated_file_prefix = file_prefix.replace(" ", "_")
+    for rid in reservation_ids:
+        folder_path = tmp_path / rid / env_name
+        file_paths = list(folder_path.glob(f"{updated_file_prefix}*.log"))
+        assert len(file_paths) == 1
+        log_records = file_paths[0].read_text()
 
-        logger = logging.getLogger("tests")
-        for h in logger.handlers:
-            if getattr(h, "flushOnClose", True):
-                h.flush()
-        # file name would be changed, but we use original in context vars
-        updated_file_prefix = file_prefix.replace(" ", "_")
-        for rid in reservation_ids:
-            folder_path = Path(temp_dir) / rid / env_name
-            file_paths = list(folder_path.glob(f"{updated_file_prefix}*.log"))
-            assert len(file_paths) == 1
-            log_records = file_paths[0].read_text()
+        assert len(re.findall(r"do smth with", log_records)) == 1
+        assert f"do smth with {rid}" in log_records
 
-            assert len(re.findall(r"do smth with", log_records)) == 1
-            assert f"do smth with {rid}" in log_records
-
-        missed_logs_path = Path(temp_dir) / "missed_logs.log"
-        assert not missed_logs_path.exists()
+    missed_logs_path = tmp_path / "missed_logs.log"
+    assert not missed_logs_path.exists()
 
 
-def test_log_records_without_context():
+def test_log_records_without_context(tmp_path):
     folder_name = "1"
     file_prefix = "resource_name"
+    os.environ["LOG_PATH"] = str(tmp_path)
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        os.environ["LOG_PATH"] = temp_dir
+    with ThreadPoolExecutor() as executor:
+        futures = [
+            executor.submit(command_with_thread_not_passed_context, "1", file_prefix)
+        ]
+        wait(futures)
 
-        with ThreadPoolExecutor() as executor:
-            futures = [
-                executor.submit(
-                    command_with_thread_not_passed_context, "1", file_prefix
-                )
-            ]
-            wait(futures)
+    logger = logging.getLogger("tests")
+    for h in logger.handlers:
+        if getattr(h, "flushOnClose", True):
+            h.flush()
 
-        logger = logging.getLogger("tests")
-        for h in logger.handlers:
-            if getattr(h, "flushOnClose", True):
-                h.flush()
+    # standard logs don't have our log records
+    folder_path = tmp_path / folder_name / env_name
+    file_paths = list(folder_path.glob(f"{file_prefix}*.log"))
+    assert len(file_paths) == 1  # exec info
+    log_records = file_paths[0].read_text()
+    assert "do smth with" not in log_records
 
-        # standard logs don't have our log records
-        folder_path = Path(temp_dir) / folder_name / env_name
-        file_paths = list(folder_path.glob(f"{file_prefix}*.log"))
-        assert len(file_paths) == 1  # exec info
-        log_records = file_paths[0].read_text()
-        assert "do smth with" not in log_records
+    # but missed logs have log records
+    missed_logs_path = tmp_path / "missed_logs.log"
+    for h in logger.handlers:
+        if isinstance(h, RotatingFileHandler):
+            assert h.baseFilename == str(missed_logs_path)
+            break
+    else:
+        assert False, "FileHandler not found"
 
-        # but missed logs have log records
-        missed_logs_path = Path(temp_dir) / "missed_logs.log"
-        for h in logger.handlers:
-            if isinstance(h, RotatingFileHandler):
-                assert h.baseFilename == str(missed_logs_path)
-                break
-        else:
-            assert False, "FileHandler not found"
-
-        assert missed_logs_path.exists()
-        log_records = missed_logs_path.read_text()
-        assert len(re.findall(r"do smth with", log_records)) == 1
-        assert f"do smth with {folder_name}" in log_records
+    assert missed_logs_path.exists()
+    log_records = missed_logs_path.read_text()
+    assert len(re.findall(r"do smth with", log_records)) == 1
+    assert f"do smth with {folder_name}" in log_records

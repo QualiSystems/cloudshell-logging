@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import logging
 import os
-import tempfile
-from pathlib import Path
 
 import pytest
 
@@ -30,42 +28,38 @@ def command(error: bool):
         raise Exception("Error")
 
 
-def test_command_logging():
+def test_command_logging(tmp_path):
     os.environ["LOG_LEVEL"] = "DEBUG"
+    os.environ["LOG_PATH"] = str(tmp_path)
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        os.environ["LOG_PATH"] = temp_dir
+    _ = get_qs_logger(log_category="tests", log_group="group")
 
-        _ = get_qs_logger(log_category="tests", log_group="group")
+    command(error=False)
 
-        command(error=False)
+    folder_path = tmp_path / "group" / venv_name
+    file_paths = list(folder_path.glob("QS*.log"))
+    assert len(file_paths) == 1
+    log_records = file_paths[0].read_text()
 
-        folder_path = Path(temp_dir) / "group" / venv_name
-        file_paths = list(folder_path.glob("QS*.log"))
-        assert len(file_paths) == 1
-        log_records = file_paths[0].read_text()
-
-        assert 'Start command "command"' in log_records
-        assert "Command" in log_records
-        assert 'Command "command" finished successfully' in log_records
+    assert 'Start command "command"' in log_records
+    assert "Command" in log_records
+    assert 'Command "command" finished successfully' in log_records
 
 
-def test_command_logging_failed():
+def test_command_logging_failed(tmp_path):
     os.environ["LOG_LEVEL"] = "DEBUG"
+    os.environ["LOG_PATH"] = str(tmp_path)
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        os.environ["LOG_PATH"] = temp_dir
+    _ = get_qs_logger(log_category="tests", log_group="group")
 
-        _ = get_qs_logger(log_category="tests", log_group="group")
+    with pytest.raises(Exception):
+        command(error=True)
 
-        with pytest.raises(Exception):
-            command(error=True)
+    folder_path = tmp_path / "group" / venv_name
+    file_paths = list(folder_path.glob("QS*.log"))
+    assert len(file_paths) == 1
+    log_records = file_paths[0].read_text()
 
-        folder_path = Path(temp_dir) / "group" / venv_name
-        file_paths = list(folder_path.glob("QS*.log"))
-        assert len(file_paths) == 1
-        log_records = file_paths[0].read_text()
-
-        assert 'Start command "command"' in log_records
-        assert "Command" in log_records
-        assert 'Command "command" finished unsuccessfully' in log_records
+    assert 'Start command "command"' in log_records
+    assert "Command" in log_records
+    assert 'Command "command" finished unsuccessfully' in log_records
