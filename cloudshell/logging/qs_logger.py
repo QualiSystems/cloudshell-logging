@@ -193,14 +193,17 @@ def get_qs_logger(
     try:
         if log_group in _LOGGER_CONTAINER:
             logger = _LOGGER_CONTAINER[log_group]
+            # log level may change between executions
+            _set_log_level(logger, config)
         else:
             logger = _create_logger(
                 log_group, log_category, log_file_prefix, config=config
             )
             _LOGGER_CONTAINER[log_group] = logger
+            # we have to set log level before logging exec info
+            _set_log_level(logger, config)
             if exec_info:
                 log_execution_info(logger, exec_info)
-        _set_log_level(logger, config)
     finally:
         _LOGGER_LOCK.release()
 
@@ -272,6 +275,10 @@ def _add_memory_handler(log_path: str, config):
     target_hdlr = logging.FileHandler(debug_log_path, mode="a", delay=True)
     memory_hdlr = LimitedMemoryHandler(config["MEMORY_LOG_SIZE"], target_hdlr)
     patch_logging_shutdown()
+
+    formatter = MultiLineFormatter(config["LOG_FORMAT"])
+    target_hdlr.setFormatter(formatter)
+
     return memory_hdlr
 
 
