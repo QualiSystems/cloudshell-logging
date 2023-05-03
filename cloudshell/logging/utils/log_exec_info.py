@@ -26,7 +26,7 @@ def log_execution_info(
         log_fn = log_fn_map[log_level.upper()]
         for k, v in info.items():
             if isinstance(v, (list, tuple)):
-                v = "\n\t".join(v)
-                v = f"\n\t{v}"
+                v = "\n\t\t".join(v)
+                v = f"\n\t\t{v}"
             log_fn(f"{k.ljust(20)}: {v}")
     logger.info("-----------------------------------------------------------\n")
