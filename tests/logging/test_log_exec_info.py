@@ -58,7 +58,7 @@ def test_log_execution_info(logger, handler):
     assert fourth_log_record.levelname == "DEBUG"
     expected_msg = (
         "Installed packages  : \n"
-        "\tattrs == 19.3.0\n"
-        "\tcloudshell-automation-api == 2021.1.0"
+        "\t\tattrs == 19.3.0\n"
+        "\t\tcloudshell-automation-api == 2021.1.0"
     )
     assert fourth_log_record.msg == expected_msg
