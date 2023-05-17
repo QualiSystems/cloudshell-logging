@@ -75,15 +75,18 @@ def get_settings():
     return config
 
 
-def _set_log_level(logger, config):
-    log_level = config.get("LOG_LEVEL", DEFAULT_LEVEL)
-
+def set_log_level(logger: logging.Logger, level: int):
     for handler in logger.handlers:
         if not isinstance(handler, LimitedMemoryHandler):
             try:
-                handler.setLevel(log_level)
+                handler.setLevel(level)
             except ValueError:
                 handler.setLevel(DEFAULT_LEVEL)
+
+
+def set_log_level_from_config(logger, config):
+    log_level = config.get("LOG_LEVEL", DEFAULT_LEVEL)
+    set_log_level(logger, log_level)
 
 
 def _get_log_path_config(config):
@@ -194,14 +197,14 @@ def get_qs_logger(
         if log_group in _LOGGER_CONTAINER:
             logger = _LOGGER_CONTAINER[log_group]
             # log level may change between executions
-            _set_log_level(logger, config)
+            set_log_level_from_config(logger, config)
         else:
             logger = _create_logger(
                 log_group, log_category, log_file_prefix, config=config
             )
             _LOGGER_CONTAINER[log_group] = logger
             # we have to set log level before logging exec info
-            _set_log_level(logger, config)
+            set_log_level_from_config(logger, config)
             if exec_info:
                 log_execution_info(logger, exec_info)
     finally:
